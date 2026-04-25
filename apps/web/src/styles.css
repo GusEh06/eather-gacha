@@ -1,0 +1,184 @@
+/* ─── Google Fonts — must precede all other rules ───────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@400;600&display=swap");
+
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+:root {
+  /* Base */
+  --bg-void:        #0a0a0f;
+  --bg-surface:     #1a1a2e;
+  --bg-elevated:    #16213e;
+
+  /* Primary accents */
+  --accent-aether:  #7b2fff;
+  --accent-gold:    #f0a500;
+  --accent-blood:   #c0392b;
+
+  /* Rarity colors */
+  --rarity-dust:        #8a8a8a;
+  --rarity-nebula:      #4caf50;
+  --rarity-comet:       #2196f3;
+  --rarity-nova:        #9c27b0;
+  --rarity-pulsar:      #f0a500;
+  --rarity-eclipse:     #c0392b;
+  --rarity-singularity: #7b2fff; /* fallback — use .singularity-gradient for full effect */
+
+  /* Functional UI */
+  --text-primary:   #e8e8f0;
+  --text-secondary: #8888aa;
+  --text-muted:     #444466;
+  --border-subtle:  rgba(123, 47, 255, 0.2);
+  --border-active:  rgba(123, 47, 255, 0.6);
+
+  /* Typography */
+  --font-display: 'Cinzel', serif;
+  --font-ui:      'Rajdhani', sans-serif;
+}
+
+/* ─── Reset & Base ──────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  background-color: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--text-primary);
+}
+
+a {
+  color: var(--accent-aether);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--text-primary);
+}
+
+/* ─── Screen Shake ──────────────────────────────────────────────────────────── */
+@keyframes screenShake {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-2px, 1px); }
+  40%  { transform: translate(2px, -1px); }
+  60%  { transform: translate(-1px, 2px); }
+  80%  { transform: translate(1px, -2px); }
+  100% { transform: translate(0, 0); }
+}
+
+.shake {
+  animation: screenShake 0.08s ease-in-out infinite;
+}
+
+/* ─── Entity Idle Animation ─────────────────────────────────────────────────── */
+@keyframes entityFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes entityGlow {
+  0%, 100% { filter: drop-shadow(0 0 8px var(--rarity-color, var(--accent-aether))); }
+  50%       { filter: drop-shadow(0 0 16px var(--rarity-color, var(--accent-aether))); }
+}
+
+.entity-idle {
+  animation:
+    entityFloat 3s ease-in-out infinite,
+    entityGlow  3s ease-in-out infinite;
+}
+
+/* ─── Singularity Gradient ──────────────────────────────────────────────────── */
+@keyframes iridescent {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.singularity-gradient {
+  background: linear-gradient(
+    90deg,
+    #ff0080, #ff8c00, #ffe100, #00ff88, #00cfff, #7b2fff, #ff0080
+  );
+  background-size: 300% 300%;
+  animation: iridescent 3s linear infinite;
+}
+
+/* ─── Aether Glow Pulse ─────────────────────────────────────────────────────── */
+@keyframes aetherPulse {
+  0%, 100% { box-shadow: 0 0 8px var(--accent-aether), 0 0 16px rgba(123, 47, 255, 0.3); }
+  50%       { box-shadow: 0 0 16px var(--accent-aether), 0 0 32px rgba(123, 47, 255, 0.5); }
+}
+
+/* ─── Fog / Mist ────────────────────────────────────────────────────────────── */
+@keyframes fogDrift {
+  0%   { transform: translateX(-10%); opacity: 0.18; }
+  50%  { transform: translateX(5%);   opacity: 0.28; }
+  100% { transform: translateX(-10%); opacity: 0.18; }
+}
+
+/* ─── Rune Glow ─────────────────────────────────────────────────────────────── */
+@keyframes runeGlow {
+  0%, 100% { filter: drop-shadow(0 0 4px var(--accent-aether)); opacity: 0.6; }
+  50%       { filter: drop-shadow(0 0 12px var(--accent-aether)); opacity: 1; }
+}
+
+/* ─── Shards Increment ──────────────────────────────────────────────────────── */
+@keyframes shardsIncrement {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.3); color: var(--accent-gold); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Buttons ───────────────────────────────────────────────────────────────── */
+.btn-primary {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  background: var(--accent-aether);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+}
+
+.btn-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ─── Card Base ─────────────────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* ─── Layout ────────────────────────────────────────────────────────────────── */
+.page {
+  min-height: calc(100vh - 60px);
+  padding: 2rem;
+}

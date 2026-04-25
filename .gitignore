@@ -1,0 +1,29 @@
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+.bun/
+
+# Build outputs
+dist/
+build/
+.output/
+.vinxi/
+.nitro/
+
+# TanStack Router (auto-generated — do NOT ignore routeTree.gen.ts, that one is committed)
+.tanstack/
+
+# TypeScript
+*.tsbuildinfo
+
+# Turbo
+.turbo/
+
+# Misc
+.DS_Store
+*.log
+*.local
