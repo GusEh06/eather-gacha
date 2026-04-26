@@ -1,3 +1,5 @@
+import { motion } from "framer-motion"
+
 interface ShardsDisplayProps {
   amount: number
 }
@@ -19,7 +21,16 @@ export function ShardsDisplay({ amount }: ShardsDisplayProps) {
       }}
     >
       <span aria-hidden="true" style={{ fontSize: "1.1em" }}>◈</span>
-      {formatted}
+      {/* key={amount} triggers re-mount → re-plays both entrance animation and shardsIncrement bump */}
+      <motion.span
+        key={amount}
+        className="shards-bump"
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
+        {formatted}
+      </motion.span>
     </span>
   )
 }

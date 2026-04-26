@@ -5,9 +5,19 @@ import {
   createRootRoute,
 } from "@tanstack/react-router"
 import { ClerkProvider } from "@clerk/tanstack-react-start"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Navbar } from "../components/ui/Navbar"
 
 import appCss from "../styles.css?url"
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+    },
+  },
+})
 
 export const Route = createRootRoute({
   head: () => ({
@@ -52,14 +62,21 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 }
 
 function RootLayout() {
+  const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as string | undefined
+  if (!clerkKey) {
+    throw new Error(
+      "[Aether] VITE_CLERK_PUBLISHABLE_KEY is not set. Copy .env.example to .env and fill in your Clerk publishable key."
+    )
+  }
+
   return (
-    <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
-    >
-      <Navbar />
-      <main>
-        <Outlet />
-      </main>
+    <ClerkProvider publishableKey={clerkKey}>
+      <QueryClientProvider client={queryClient}>
+        <Navbar />
+        <main>
+          <Outlet />
+        </main>
+      </QueryClientProvider>
     </ClerkProvider>
   )
 }

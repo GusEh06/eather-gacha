@@ -177,6 +177,146 @@ a:hover {
   padding: 1rem;
 }
 
+/* ─── Black Hole Spin (Singularity Core — Vault) ────────────────────────────── */
+@keyframes blackHoleSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.black-hole {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    #ff0080,
+    #7b2fff,
+    #00cfff,
+    #000000 60%,
+    #ff0080
+  );
+  animation: blackHoleSpin 3s linear infinite;
+  box-shadow:
+    0 0 16px rgba(123, 47, 255, 0.6),
+    0 0 32px rgba(0, 0, 0, 0.8);
+  margin: 0.25rem auto;
+}
+
+/* ─── Secondary Button ──────────────────────────────────────────────────────── */
+.btn-secondary {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  background: transparent;
+  color: var(--accent-aether);
+  border: 1px solid var(--accent-aether);
+  border-radius: 4px;
+  padding: 0.5rem 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-secondary:hover {
+  background: rgba(123, 47, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+/* ─── Shards Bump (applied on remount via key={amount}) ─────────────────────── */
+.shards-bump {
+  display: inline-block;
+  animation: shardsIncrement 0.45s ease-out;
+}
+
+/* ─── Atmospheric: Altar ────────────────────────────────────────────────────── */
+.altar-fog-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 50% 100%, rgba(123, 47, 255, 0.13) 0%, transparent 55%),
+    radial-gradient(ellipse at 18% 55%,  rgba(123, 47, 255, 0.05) 0%, transparent 38%),
+    radial-gradient(ellipse at 82% 55%,  rgba(33,  150, 243, 0.04) 0%, transparent 38%);
+  animation: fogDrift 18s ease-in-out infinite;
+}
+
+.altar-rune {
+  position: fixed;
+  font-family: var(--font-display);
+  color: rgba(123, 47, 255, 0.1);
+  pointer-events: none;
+  animation: runeGlow 5s ease-in-out infinite;
+  user-select: none;
+  z-index: -1;
+}
+
+/* ─── Atmospheric: Bazaar ───────────────────────────────────────────────────── */
+.bazaar-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 50%, transparent 28%, rgba(0, 0, 0, 0.52) 100%);
+}
+
+/* ─── Atmospheric: Rift ─────────────────────────────────────────────────────── */
+@keyframes riftSwirl {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.rift-portal-bg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 800px;
+  height: 800px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent            0%,
+    rgba(123, 47, 255, 0.07) 20%,
+    transparent            40%,
+    rgba(33, 150, 243, 0.05) 60%,
+    transparent            80%,
+    rgba(123, 47, 255, 0.03) 100%
+  );
+  animation: riftSwirl 28s linear infinite;
+  z-index: -1;
+}
+
+/* ─── Atmospheric: Vault ────────────────────────────────────────────────────── */
+.vault-torchlight {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at  8% 92%, rgba(240, 165, 0, 0.09) 0%, transparent 38%),
+    radial-gradient(ellipse at 92% 92%, rgba(240, 165, 0, 0.09) 0%, transparent 38%),
+    radial-gradient(ellipse at 50%  0%, rgba(123,  47, 255, 0.06) 0%, transparent 40%);
+}
+
+/* ─── EyesSequence: Eclipse Flicker ────────────────────────────────────────── */
+@keyframes eclipseFlicker {
+  0%, 100% { opacity: 1; }
+  12%       { opacity: 0.2; }
+  26%       { opacity: 0.85; }
+  44%       { opacity: 0.08; }
+  58%       { opacity: 0.95; }
+  74%       { opacity: 0.38; }
+}
+
+/* ─── EyesSequence: Singularity Hue Cycle ──────────────────────────────────── */
+@keyframes singHueCycle {
+  from { filter: hue-rotate(0deg)   brightness(1.4); }
+  to   { filter: hue-rotate(360deg) brightness(1.4); }
+}
+
 /* ─── Layout ────────────────────────────────────────────────────────────────── */
 .page {
   min-height: calc(100vh - 60px);

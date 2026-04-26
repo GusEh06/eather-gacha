@@ -1,4 +1,4 @@
-import { MongoClient } from "mongodb"
+import { MongoClient, ObjectId } from "mongodb"
 
 const MONGODB_URI =
   process.env.MONGODB_URI ?? "mongodb://root:root@localhost:27017/aether?authSource=admin"
@@ -187,6 +187,26 @@ const entities = [
   },
 ]
 
+// Rift prices by rarity (mirrors apps/api/src/services/rift.ts)
+const RIFT_PRICES: Record<string, number> = {
+  comet: 200,
+  nova: 500,
+  pulsar: 1200,
+  eclipse: 4000,
+  singularity: 8000,
+}
+
+// Demo market listing prices
+const MARKET_PRICES: Record<string, number> = {
+  comet: 450,
+  nova: 900,
+  pulsar: 2500,
+  eclipse: 6000,
+}
+
+const DEMO_CLERK_ID = "demo_seed_user"
+const DEMO_USERNAME = "VoidKeeper"
+
 async function seed() {
   const client = new MongoClient(MONGODB_URI)
 
@@ -195,15 +215,20 @@ async function seed() {
     console.log("Connected to MongoDB")
 
     const db = client.db("aether")
-    const col = db.collection("entities")
 
-    // Clean existing entities
-    const deleted = await col.deleteMany({})
+    // ── 1. Entities ──────────────────────────────────────────────────────────
+    const entitiesCol = db.collection("entities")
+    const deleted = await entitiesCol.deleteMany({})
     console.log(`Deleted ${deleted.deletedCount} existing entities`)
 
-    // Insert all entities
-    const result = await col.insertMany(entities)
+    const result = await entitiesCol.insertMany(entities)
     console.log(`Inserted ${result.insertedCount} entities`)
+
+    // Build nombre → ObjectId map for later use
+    const entityIdMap: Record<string, ObjectId> = {}
+    for (const [idx, id] of Object.entries(result.insertedIds)) {
+      entityIdMap[entities[Number(idx)].nombre] = id as ObjectId
+    }
 
     // Summary by rarity
     const summary: Record<string, number> = {}
@@ -213,6 +238,99 @@ async function seed() {
     console.log("\nEntities by rarity:")
     for (const [rareza, count] of Object.entries(summary)) {
       console.log(`  ${rareza.padEnd(12)} → ${count}`)
+    }
+
+    // ── 2. Demo user ─────────────────────────────────────────────────────────
+    const usersCol = db.collection("users")
+    await usersCol.deleteOne({ clerkId: DEMO_CLERK_ID })
+    await usersCol.insertOne({
+      clerkId: DEMO_CLERK_ID,
+      username: DEMO_USERNAME,
+      title: "Aether Binder",
+      shards: 9999,
+      pityCounter: 0,
+      pityMythicCounter: 0,
+      inventory: [],
+      createdAt: new Date(),
+    })
+    console.log(`\nDemo user created: Aether Binder ${DEMO_USERNAME}`)
+
+    // ── 3. Demo market listings ───────────────────────────────────────────────
+    // Entities eligible for the Bazaar: comet, nova, pulsar, eclipse
+    const bazaarEntities = entities.filter(
+      (e) => e.rareza in MARKET_PRICES
+    )
+
+    const userEntitiesCol = db.collection("user_entities")
+    const marketCol = db.collection("market_listings")
+
+    // Clear previous demo listings
+    await marketCol.deleteMany({ sellerId: DEMO_CLERK_ID })
+    await userEntitiesCol.deleteMany({ ownerId: DEMO_CLERK_ID })
+
+    const listingCount = { created: 0 }
+    for (const entity of bazaarEntities) {
+      const entityId = entityIdMap[entity.nombre]
+      if (!entityId) continue
+
+      // Create user_entity instance owned by demo user
+      const ueResult = await userEntitiesCol.insertOne({
+        entityId,
+        ownerId: DEMO_CLERK_ID,
+        obtainedAt: new Date(),
+        obtainedVia: "gacha",
+      })
+
+      // Create active market listing
+      await marketCol.insertOne({
+        sellerId: DEMO_CLERK_ID,
+        sellerUsername: DEMO_USERNAME,
+        userEntityId: ueResult.insertedId,
+        entitySnapshot: entity,
+        priceShards: MARKET_PRICES[entity.rareza],
+        status: "active",
+        createdAt: new Date(),
+      })
+
+      listingCount.created++
+    }
+    console.log(`Demo market listings created: ${listingCount.created}`)
+
+    // ── 4. Today's Rift rotation ──────────────────────────────────────────────
+    const riftCol = db.collection("rift_rotation")
+    const today = new Date().toISOString().split("T")[0]
+
+    // Tomorrow UTC midnight
+    const midnight = new Date()
+    midnight.setUTCHours(24, 0, 0, 0)
+
+    // Pick up to 5 rift-eligible entities
+    const riftEntities = entities
+      .filter((e) => e.disponibleRift)
+      .slice(0, 5)
+
+    const riftSlots = riftEntities.map((e, i) => ({
+      entityId: entityIdMap[e.nombre],
+      priceShards: RIFT_PRICES[e.rareza] ?? 200,
+      sold: false,
+    }))
+
+    // Upsert — only creates if no rotation exists for today
+    const riftResult = await riftCol.updateOne(
+      { date: today },
+      {
+        $setOnInsert: {
+          date: today,
+          slots: riftSlots,
+          expiresAt: midnight,
+        },
+      },
+      { upsert: true }
+    )
+    if (riftResult.upsertedCount > 0) {
+      console.log(`Rift rotation created for ${today} (${riftSlots.length} slots)`)
+    } else {
+      console.log(`Rift rotation for ${today} already exists — skipped`)
     }
 
     console.log("\nSeed completed successfully.")

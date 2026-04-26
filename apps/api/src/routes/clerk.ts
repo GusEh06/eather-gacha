@@ -61,19 +61,22 @@ async function verifyClerkWebhook(
 clerkRoutes.post("/webhook", async (c) => {
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET
 
+  if (!webhookSecret) {
+    console.error("[clerk] CLERK_WEBHOOK_SECRET is not set — rejecting webhook call")
+    return c.json({ error: "Webhook secret not configured" }, 500)
+  }
+
   const rawBody = await c.req.text()
   const svixId = c.req.header("svix-id") ?? ""
   const svixTimestamp = c.req.header("svix-timestamp") ?? ""
   const svixSignature = c.req.header("svix-signature") ?? ""
 
-  // Only verify signature when secret is configured (skip in dev without keys)
-  if (webhookSecret) {
-    const valid = await verifyClerkWebhook(
-      rawBody, svixId, svixTimestamp, svixSignature, webhookSecret,
-    )
-    if (!valid) {
-      return c.json({ error: "Invalid webhook signature" }, 400)
-    }
+  // Verify signature — secret is guaranteed present at this point
+  const valid = await verifyClerkWebhook(
+    rawBody, svixId, svixTimestamp, svixSignature, webhookSecret,
+  )
+  if (!valid) {
+    return c.json({ error: "Invalid webhook signature" }, 400)
   }
 
   let evt: { type: string; data: Record<string, unknown> }

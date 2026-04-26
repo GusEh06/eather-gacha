@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router"
+import { useAuth, SignInButton, UserButton } from "@clerk/tanstack-react-start"
 import { ShardsDisplay } from "./ShardsDisplay"
+import { useUserProfile } from "../../hooks/useUserProfile"
 
 const NAV_LINKS = [
   { to: "/",           label: "The Altar" },
@@ -10,6 +12,9 @@ const NAV_LINKS = [
 ] as const
 
 export function Navbar() {
+  const { isSignedIn } = useAuth()
+  const { data: profile } = useUserProfile()
+
   return (
     <nav
       style={{
@@ -64,8 +69,24 @@ export function Navbar() {
         ))}
       </ul>
 
-      {/* Shards — placeholder until user context is wired */}
-      <ShardsDisplay amount={0} />
+      {/* Shards + auth */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        {isSignedIn ? (
+          <>
+            <ShardsDisplay amount={profile?.shards ?? 0} />
+            <UserButton />
+          </>
+        ) : (
+          <SignInButton mode="modal">
+            <button
+              className="btn-primary"
+              style={{ fontSize: "0.85rem", padding: "0.4rem 1rem" }}
+            >
+              Sign In
+            </button>
+          </SignInButton>
+        )}
+      </div>
     </nav>
   )
 }
