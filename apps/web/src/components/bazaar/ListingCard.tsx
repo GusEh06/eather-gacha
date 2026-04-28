@@ -25,16 +25,26 @@ export function ListingCard({ listing, currentUserId, onBuy }: Props) {
         borderColor: config ? `var(${config.cssVar})` : "var(--border-subtle)",
       }}
     >
-      {/* Entity icon */}
+      {/* Entity image */}
       <div
         className="entity-idle"
         style={{
+          width: "80px",
+          height: "80px",
+          borderRadius: "50%",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
           fontSize: "2.5rem",
           color: config?.color,
           "--rarity-color": config?.color,
         } as React.CSSProperties}
       >
-        {config?.icon ?? "◈"}
+        {entitySnapshot.imageUrl
+          ? <img src={entitySnapshot.imageUrl} alt={entitySnapshot.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : (config?.icon ?? "◈")
+        }
       </div>
 
       {/* Entity name */}

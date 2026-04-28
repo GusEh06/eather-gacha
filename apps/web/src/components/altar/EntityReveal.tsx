@@ -47,6 +47,7 @@ export function EntityReveal({ result, onContinue, onListBazaar }: EntityRevealP
           width: "180px",
           height: "180px",
           borderRadius: "50%",
+          overflow: "hidden",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -57,7 +58,10 @@ export function EntityReveal({ result, onContinue, onListBazaar }: EntityRevealP
           "--rarity-color": `var(${cfg.cssVar})`,
         }}
       >
-        {cfg.icon}
+        {entity.imageUrl
+          ? <img src={entity.imageUrl} alt={entity.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          : cfg.icon
+        }
       </motion.div>
 
       {/* Rarity */}
