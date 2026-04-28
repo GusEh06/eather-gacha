@@ -94,7 +94,7 @@ vaultRoutes.post("/webhook", async (c) => {
   try {
     const stripe = getStripe()
     if (webhookSecret) {
-      event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
+      event = await stripe.webhooks.constructEventAsync(rawBody, sig, webhookSecret)
     } else {
       event = JSON.parse(rawBody) as Stripe.Event
     }

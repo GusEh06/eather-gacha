@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@clerk/tanstack-react-start"
+import { getAuthToken } from "../lib/auth"
 
 export interface UserProfile {
   shards: number
@@ -19,7 +20,7 @@ export function useUserProfile() {
   return useQuery<UserProfile>({
     queryKey: USER_PROFILE_KEY,
     queryFn: async () => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const apiUrl =
         (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:3001"
       const res = await fetch(`${apiUrl}/user/profile`, {
