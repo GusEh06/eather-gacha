@@ -78,20 +78,13 @@ function BazaarPage() {
       <div className="bazaar-vignette" aria-hidden="true" />
 
       {/* Header */}
-      <div style={{ marginBottom: "1.5rem" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "2rem",
-            color: "var(--accent-aether)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          The Hollow Bazaar
+      <div>
+        <h1 className="brutalist-title">
+          El Bazar
         </h1>
-        <p style={{ color: "var(--text-secondary)", marginTop: "0.4rem" }}>
-          Trade entities with other Aether Binders. All transactions in Shards.
-        </p>
+        <div className="brutalist-subtitle">
+          Intercambia Personajes por Shards
+        </div>
       </div>
 
       {/* Sell panel — only shown when signed in with listable entities */}
@@ -112,7 +105,7 @@ function BazaarPage() {
               fontSize: "0.9rem",
             }}
           >
-            {sellableItems.length} listable {sellableItems.length === 1 ? "entity" : "entities"}
+            {sellableItems.length} {sellableItems.length === 1 ? "entidad disponible" : "entidades disponibles"}
           </span>
           <select
             value=""
@@ -121,19 +114,21 @@ function BazaarPage() {
               if (item) setSellTarget(item)
             }}
             style={{
-              fontFamily: "var(--font-ui)",
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              background: "var(--bg-elevated)",
-              color: "var(--text-primary)",
-              border: "1px solid var(--border-active)",
-              borderRadius: "4px",
-              padding: "0.4rem 0.75rem",
+              fontFamily: "var(--font-display)",
+              fontWeight: 900,
+              fontSize: "1rem",
+              background: "#000",
+              color: "#ff3399",
+              border: "4px solid #000",
+              boxShadow: "4px 4px 0 #ccff00",
+              padding: "0.5rem 1rem",
               cursor: "pointer",
+              textTransform: "uppercase",
+              appearance: "none",
             }}
           >
             <option value="" disabled>
-              List an entity…
+              Listar una entidad…
             </option>
             {sellableItems.map((item) => (
               <option key={item._id} value={item._id}>
@@ -164,26 +159,28 @@ function BazaarPage() {
       {/* Listings */}
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
-          Loading listings…
+          Cargando anuncios…
         </p>
       ) : isError ? (
         <p style={{ color: "var(--accent-blood)", fontFamily: "var(--font-ui)" }}>
-          Failed to load listings.
+          Error al cargar los anuncios.
         </p>
       ) : !listings || listings.length === 0 ? (
         <div
           style={{
             textAlign: "center",
             padding: "4rem 2rem",
-            color: "var(--text-muted)",
-            fontFamily: "var(--font-ui)",
-            border: "1px dashed var(--border-subtle)",
-            borderRadius: "8px",
+            color: "#000",
+            background: "#ccff00",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            border: "6px solid #000",
+            boxShadow: "12px 12px 0 #000",
             maxWidth: "480px",
+            textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>◈</p>
-          <p>No listings yet. Be the first to list an entity.</p>
+          <p>No se encontraron anuncios</p>
         </div>
       ) : (
         <div

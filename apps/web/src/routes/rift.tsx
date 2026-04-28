@@ -16,7 +16,7 @@ function RiftPage() {
 
   function handleBuy(slotIndex: number) {
     if (!isSignedIn) {
-      setErrorMsg("Sign in to purchase from the Rift.")
+      setErrorMsg("Inicia sesión para comprar en las Fisuras.")
       return
     }
     setErrorMsg(null)
@@ -39,20 +39,13 @@ function RiftPage() {
       <div className="rift-portal-bg" aria-hidden="true" />
 
       {/* Header */}
-      <div style={{ marginBottom: "2rem" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "2rem",
-            color: "var(--accent-aether)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          The Rift
+      <div>
+        <h1 className="brutalist-title">
+          Las Fisuras
         </h1>
-        <p style={{ color: "var(--text-secondary)", marginTop: "0.4rem" }}>
-          Entities drift through the rift for a limited time. Buy directly with Shards.
-        </p>
+        <div className="brutalist-subtitle">
+          Misiones de Tiempo Limitado
+        </div>
         <div
           style={{
             marginTop: "0.75rem",
@@ -68,7 +61,7 @@ function RiftPage() {
               fontSize: "0.9rem",
             }}
           >
-            Closes in:
+            Cierra en:
           </span>
           {rift ? (
             <RiftTimer expiresAt={rift.expiresAt} />
@@ -104,11 +97,11 @@ function RiftPage() {
       {/* Content */}
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
-          Loading rift…
+          Cargando fisura…
         </p>
       ) : isError ? (
         <p style={{ color: "var(--accent-blood)", fontFamily: "var(--font-ui)" }}>
-          Failed to load Rift rotation.
+          Error al cargar la rotación.
         </p>
       ) : rift ? (
         <div
