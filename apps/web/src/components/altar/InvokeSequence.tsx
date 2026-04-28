@@ -8,6 +8,7 @@ import { useAuth } from "@clerk/tanstack-react-start"
 import { useInvoke, type InvokeResult } from "../../hooks/useInvoke"
 import { rarityParticleConfig } from "../../config/particles"
 import { useUserProfile, USER_PROFILE_KEY, type UserProfile } from "../../hooks/useUserProfile"
+import { CtaSlot } from "../ui/CtaSlot"
 import { AltarScene } from "./AltarScene"
 import { EyesSequence } from "./EyesSequence"
 import { EntityReveal } from "./EntityReveal"
@@ -166,13 +167,15 @@ export function InvokeSequence() {
       id="altar-container"
       ref={containerRef}
       style={{
-        minHeight: "calc(100vh - 60px)",
-        background: "var(--bg-void)",
+        height: "100%",
+        width: "100%",
+        background: "transparent",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
         overflow: "hidden",
+        borderRadius: "2px",
       }}
     >
       {/* Atmospheric background — fog + floating runes */}
@@ -223,6 +226,35 @@ export function InvokeSequence() {
           pointerEvents: "none",
         }}
       />
+
+      {/* CTA slot — primary ritual actions live in the layout's bottom-right.
+          Hidden during the busy phases so the scene can breathe. */}
+      {phase === "idle" && isSignedIn && (
+        <CtaSlot>
+          {shards < 160 ? (
+            <a className="aether-cta aether-cta--gold" href="/vault">
+              Acquire Shards
+            </a>
+          ) : (
+            <>
+              <button
+                className="aether-cta aether-cta--ghost"
+                disabled={shards < 160}
+                onClick={() => handleInvoke("x1")}
+              >
+                Invoke ×1 · ◈ 160
+              </button>
+              <button
+                className="aether-cta aether-cta--gold"
+                disabled={shards < 1600}
+                onClick={() => handleInvoke("x10")}
+              >
+                Invoke ×10 · ◈ 1,600
+              </button>
+            </>
+          )}
+        </CtaSlot>
+      )}
     </div>
   )
 }

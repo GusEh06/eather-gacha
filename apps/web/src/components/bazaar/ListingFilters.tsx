@@ -14,15 +14,17 @@ const SORT_OPTIONS = [
 ]
 
 const selectStyle: React.CSSProperties = {
-  fontFamily: "var(--font-ui)",
-  fontWeight: 600,
-  fontSize: "0.9rem",
-  background: "var(--bg-elevated)",
-  color: "var(--text-primary)",
-  border: "1px solid var(--border-subtle)",
-  borderRadius: "4px",
-  padding: "0.4rem 0.75rem",
+  fontFamily: "var(--font-display)",
+  fontWeight: 900,
+  fontSize: "1rem",
+  background: "#000",
+  color: "#00ffff",
+  border: "4px solid #000",
+  boxShadow: "4px 4px 0 #ccff00",
+  padding: "0.5rem 1rem",
   cursor: "pointer",
+  textTransform: "uppercase",
+  appearance: "none",
 }
 
 interface Props {
