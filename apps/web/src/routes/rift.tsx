@@ -16,7 +16,7 @@ function RiftPage() {
 
   function handleBuy(slotIndex: number) {
     if (!isSignedIn) {
-      setErrorMsg("Sign in to purchase from the Rift.")
+      setErrorMsg("Inicia sesión para comprar en las Fisuras.")
       return
     }
     setErrorMsg(null)
@@ -41,10 +41,10 @@ function RiftPage() {
       {/* Header */}
       <div>
         <h1 className="brutalist-title">
-          THE_RIFT
+          Las Fisuras
         </h1>
         <div className="brutalist-subtitle">
-          LIMITED_TIME_DRIFTS
+          Misiones de Tiempo Limitado
         </div>
         <div
           style={{
@@ -61,7 +61,7 @@ function RiftPage() {
               fontSize: "0.9rem",
             }}
           >
-            Closes in:
+            Cierra en:
           </span>
           {rift ? (
             <RiftTimer expiresAt={rift.expiresAt} />
@@ -97,11 +97,11 @@ function RiftPage() {
       {/* Content */}
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
-          Loading rift…
+          Cargando fisura…
         </p>
       ) : isError ? (
         <p style={{ color: "var(--accent-blood)", fontFamily: "var(--font-ui)" }}>
-          Failed to load Rift rotation.
+          Error al cargar la rotación.
         </p>
       ) : rift ? (
         <div

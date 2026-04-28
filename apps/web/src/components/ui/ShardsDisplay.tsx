@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react"
-import anime from "animejs"
 
 interface ShardsDisplayProps {
   amount: number
@@ -23,42 +22,45 @@ export function ShardsDisplay({ amount }: ShardsDisplayProps) {
     const to   = amount
     if (from === to) return
 
-    const proxy = { v: from }
-    anime({
-      targets:    proxy,
-      v:          to,
-      duration:   650,
-      easing:     "easeOutCubic",
-      round:      1,
-      update:     () => setDisplay(proxy.v),
+    import("animejs").then((mod) => {
+      const anime = mod.default
+      const proxy = { v: from }
+      anime({
+        targets:    proxy,
+        v:          to,
+        duration:   650,
+        easing:     "easeOutCubic",
+        round:      1,
+        update:     () => setDisplay(proxy.v),
+      })
+
+      if (valueRef.current) {
+        anime.remove(valueRef.current)
+        anime({
+          targets: valueRef.current,
+          scale:   [
+            { value: 1.18, duration: 140, easing: "easeOutQuad" },
+            { value: 1,    duration: 280, easing: "easeOutElastic(1, .6)" },
+          ],
+          color: [
+            { value: "#ffd76b", duration: 180 },
+            { value: "#f0a500", duration: 320 },
+          ],
+        })
+      }
+
+      if (sigilRef.current) {
+        anime.remove(sigilRef.current)
+        anime({
+          targets: sigilRef.current,
+          rotate:  [{ value: -18, duration: 120 }, { value: 0, duration: 320 }],
+          filter: [
+            { value: "drop-shadow(0 0 12px rgba(240,165,0,0.8))", duration: 180 },
+            { value: "drop-shadow(0 0 4px rgba(240,165,0,0.4))",  duration: 320 },
+          ],
+        })
+      }
     })
-
-    if (valueRef.current) {
-      anime.remove(valueRef.current)
-      anime({
-        targets: valueRef.current,
-        scale:   [
-          { value: 1.18, duration: 140, easing: "easeOutQuad" },
-          { value: 1,    duration: 280, easing: "easeOutElastic(1, .6)" },
-        ],
-        color: [
-          { value: "#ffd76b", duration: 180 },
-          { value: "#f0a500", duration: 320 },
-        ],
-      })
-    }
-
-    if (sigilRef.current) {
-      anime.remove(sigilRef.current)
-      anime({
-        targets: sigilRef.current,
-        rotate:  [{ value: -18, duration: 120 }, { value: 0, duration: 320 }],
-        filter: [
-          { value: "drop-shadow(0 0 12px rgba(240,165,0,0.8))", duration: 180 },
-          { value: "drop-shadow(0 0 4px rgba(240,165,0,0.4))",  duration: 320 },
-        ],
-      })
-    }
 
     prevRef.current = to
   }, [amount])

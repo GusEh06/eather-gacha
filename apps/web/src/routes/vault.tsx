@@ -57,7 +57,7 @@ function VaultPage() {
             maxWidth: "960px"
           }}
         >
-          Payment successful — your Shards have been credited to your account!
+          ¡Pago exitoso — tus Shards han sido acreditados a tu cuenta!
         </div>
       )}
 
@@ -77,17 +77,17 @@ function VaultPage() {
             maxWidth: "960px"
           }}
         >
-          Payment cancelled. Your Shards were not charged.
+          Pago cancelado. No se cobraron tus Shards.
         </div>
       )}
 
       {/* ── Header ── */}
       <div>
         <h1 className="brutalist-title">
-          THE_AETHER_VAULT
+          La Bóveda
         </h1>
         <div className="brutalist-subtitle">
-          ACQUIRE_SHARDS. SECURED_BY_STRIPE.
+          Adquiere Shards. Protegido por Stripe.
         </div>
       </div>
 
@@ -124,7 +124,7 @@ function VaultPage() {
             setSelectedPkg(PACKAGES.find((p) => p.id === "nova_surge") ?? null)
           }
         >
-          Acquire Nova Surge
+          Adquirir Nova Surge
         </button>
       </CtaSlot>
     </div>

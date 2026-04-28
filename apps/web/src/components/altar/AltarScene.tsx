@@ -11,22 +11,20 @@ export function AltarScene({ shards, onInvoke, isLoading }: AltarSceneProps) {
   const canX10 = !isLoading && shards >= 1600
 
   return (
-    <div style={{ textAlign: "center", padding: "1rem", zIndex: 10 }}>
+    <div style={{ textAlign: "center", padding: "1rem", zIndex: 10, marginTop: "-120px" }}>
       <h1
         style={{
           fontFamily: "var(--font-display)",
           fontSize: "4.5rem",
           color: "#00ffff",
-          textShadow: "6px 6px 0 #000",
-          letterSpacing: "0.1em",
+          textShadow: "3px 3px 0 #ff3399",
+          letterSpacing: "0.05em",
           marginBottom: "0.5rem",
           fontWeight: 900,
-          fontStyle: "italic",
-          WebkitTextStroke: "2px #000",
           textTransform: "uppercase"
         }}
       >
-        THE_ALTAR
+        Ritual
       </h1>
       <div
         style={{
@@ -43,7 +41,7 @@ export function AltarScene({ shards, onInvoke, isLoading }: AltarSceneProps) {
           textTransform: "uppercase"
         }}
       >
-        SELECT_ENTITY_FOR_SUMMON
+        Elige tu Aliado
       </div>
 
       {/* Esfera de Poder (Brutalist Comic Style con Vortex) */}
@@ -193,20 +191,22 @@ export function AltarScene({ shards, onInvoke, isLoading }: AltarSceneProps) {
 
       <div
         style={{
-          display: "inline-block",
+          position: "fixed",
+          top: "100px",
+          right: "40px",
           background: "#000",
           color: "#fff",
           padding: "10px 20px",
           fontFamily: "var(--font-display)",
           fontWeight: 900,
           fontSize: "1.2rem",
-          marginTop: "2.5rem",
           letterSpacing: "0.1em",
           border: "4px solid #ccff00",
-          boxShadow: "6px 6px 0 #000"
+          boxShadow: "6px 6px 0 #000",
+          zIndex: 50
         }}
       >
-        BALANCE: ◈ {shards.toLocaleString()}
+        Saldo: ◈ {shards.toLocaleString()}
       </div>
     </div>
   )

@@ -33,10 +33,10 @@ function CollectionPage() {
       <div className="page">
         <div>
           <h1 className="brutalist-title">
-            COLLECTION
+            Colección
           </h1>
           <div className="brutalist-subtitle">
-            YOUR_BOUND_ENTITIES
+            Tus Entidades Vinculadas
           </div>
         </div>
         <div
@@ -53,8 +53,7 @@ function CollectionPage() {
             textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>👤</p>
-          <p>SIGN_IN_REQUIRED</p>
+          <p>Inicia Sesión para ver tu Colección</p>
         </div>
       </div>
     )
@@ -64,20 +63,20 @@ function CollectionPage() {
     <div className="page">
       <div>
         <h1 className="brutalist-title">
-          COLLECTION
+          Colección
         </h1>
         <div className="brutalist-subtitle">
-          YOUR_BOUND_ENTITIES
+          Tus Entidades Vinculadas
         </div>
       </div>
 
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
-          Loading your collection…
+          Cargando tu colección…
         </p>
       ) : isError ? (
         <p style={{ color: "var(--accent-blood)", fontFamily: "var(--font-ui)" }}>
-          Failed to load collection.
+          Error al cargar la colección.
         </p>
       ) : !inventory || inventory.length === 0 ? (
         <div
@@ -94,8 +93,7 @@ function CollectionPage() {
             textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>◈</p>
-          <p>NO_ENTITIES_BOUND</p>
+          <p>No se encontraron personajes</p>
         </div>
       ) : (
         <>
@@ -107,7 +105,7 @@ function CollectionPage() {
               marginBottom: "1.5rem",
             }}
           >
-            {inventory.length} {inventory.length === 1 ? "entity" : "entities"} bound
+            {inventory.length} {inventory.length === 1 ? "entidad vinculada" : "entidades vinculadas"}
           </p>
           <div
             style={{
@@ -160,7 +158,7 @@ function CollectionPage() {
                       textTransform: "capitalize",
                     }}
                   >
-                    via {item.obtainedVia}
+                    vía {item.obtainedVia}
                   </p>
                   {/* List on Bazaar — only for tradable rarities */}
                   {!NON_BAZAAR_RARITIES.includes(
@@ -174,7 +172,7 @@ function CollectionPage() {
                         setSellError(null)
                       }}
                     >
-                      List on Bazaar
+                      Listar en el Bazar
                     </button>
                   )}
                 </div>

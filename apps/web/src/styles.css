@@ -1165,10 +1165,42 @@ a:hover {
 .aether-rune-float {
   position: absolute;
   font-family: var(--font-display);
-  color: rgba(123, 47, 255, 0.35);
-  text-shadow: 0 0 12px rgba(123, 47, 255, 0.45);
+  font-weight: 700;
+  color: rgba(123, 47, 255, 0.55);
+  text-shadow:
+    0 0 8px rgba(123, 47, 255, 0.6),
+    0 0 20px rgba(123, 47, 255, 0.35),
+    0 0 40px rgba(123, 47, 255, 0.15);
   user-select: none;
   pointer-events: none;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+/* Ember sparks — brief pop-and-vanish energy bursts */
+.aether-ember {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(0, 255, 255, 0.8) 30%,
+    rgba(123, 47, 255, 0.5) 60%,
+    transparent 80%);
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.6),
+              0 0 12px rgba(123, 47, 255, 0.3);
+  opacity: 0;
+  transform: scale(0);
+  will-change: transform, opacity;
+}
+
+/* Nebula orbs — large, soft, pulsing background blobs */
+.aether-orb {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  filter: blur(60px);
   will-change: transform, opacity;
 }
 
@@ -1194,8 +1226,11 @@ a:hover {
     transparent 70%);
 }
 .aether-shell[data-route="bazaar"] .aether-rune-float {
-  color: rgba(240, 165, 0, 0.30);
-  text-shadow: 0 0 10px rgba(240, 165, 0, 0.45);
+  color: rgba(240, 165, 0, 0.50);
+  text-shadow:
+    0 0 8px rgba(240, 165, 0, 0.6),
+    0 0 20px rgba(240, 165, 0, 0.3),
+    0 0 40px rgba(240, 165, 0, 0.12);
 }
 
 /* Rift — cosmic, swirling blue/violet */
@@ -1216,8 +1251,11 @@ a:hover {
     transparent 70%);
 }
 .aether-shell[data-route="rift"] .aether-rune-float {
-  color: rgba(33, 150, 243, 0.32);
-  text-shadow: 0 0 12px rgba(33, 150, 243, 0.5);
+  color: rgba(33, 150, 243, 0.50);
+  text-shadow:
+    0 0 8px rgba(33, 150, 243, 0.6),
+    0 0 20px rgba(33, 150, 243, 0.35),
+    0 0 40px rgba(33, 150, 243, 0.15);
 }
 
 /* Vault — gilded, treasury, deep gold + crystalline */
@@ -1238,8 +1276,11 @@ a:hover {
     transparent 70%);
 }
 .aether-shell[data-route="vault"] .aether-rune-float {
-  color: rgba(240, 165, 0, 0.4);
-  text-shadow: 0 0 14px rgba(240, 165, 0, 0.6);
+  color: rgba(240, 165, 0, 0.55);
+  text-shadow:
+    0 0 8px rgba(240, 165, 0, 0.65),
+    0 0 22px rgba(240, 165, 0, 0.35),
+    0 0 44px rgba(240, 165, 0, 0.15);
 }
 
 /* Collection — quiet archive, muted aether + dust */
@@ -1328,9 +1369,12 @@ a:hover {
    ============================================================================ */
 .gacha-shell {
   position: fixed;
-  inset: 0;
-  height: 100vh;
-  width: 100vw;
+  top: 0;
+  left: 0;
+  height: 149.2537vh;
+  width: 149.2537vw;
+  transform: scale(0.67);
+  transform-origin: top left;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -1412,114 +1456,82 @@ a:hover {
   cursor: pointer;
 }
 
-/* SIDEBAR */
-.sidebar-wrapper {
+/* BOTTOM HUD NAVIGATION */
+.gacha-bottombar {
   position: absolute;
-  top: 60px;
-  left: 0;
   bottom: 0;
-  width: 320px;
-  transform: translateX(-100%);
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 25px;
+  padding: 0 30px 30px 30px;
   z-index: 50;
-  display: flex;
-}
-.sidebar-wrapper:hover, .sidebar-wrapper:focus-within {
-  transform: translateX(0);
-}
-.sidebar-trigger {
-  position: absolute;
-  right: -50px;
-  top: 20px;
-  width: 50px;
-  height: 60px;
-  background: #ff3399;
-  border: 4px solid #000;
-  border-left: none;
-  box-shadow: 6px 6px 0 #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  color: #000;
-  cursor: pointer;
-  pointer-events: auto;
-  transition: right 0.3s;
-}
-.gacha-sidebar {
-  width: 100%;
-  margin: 20px 0 20px 20px;
-  background: #110518;
-  border: 4px solid #000;
-  box-shadow: 8px 8px 0 #000;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-  position: relative;
-}
-.sidebar-header {
-  padding: 20px;
-  border-bottom: 4px solid #000;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-.sidebar-icon {
-  font-size: 2rem;
-  background: #fff;
-  border: 3px solid #000;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 3px 3px 0 #000;
-}
-.sidebar-title h2 {
-  font-family: var(--font-display);
-  color: #ccff00;
-  font-size: 1.2rem;
-  margin: 0;
-  text-shadow: 2px 2px 0 #000;
-}
-.sidebar-title span {
-  font-family: var(--font-ui);
-  color: #00ffff;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  pointer-events: none; /* Let clicks pass through empty areas */
 }
 
-.gacha-nav {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
 .gacha-nav-item {
-  display: block;
-  background: #ff3399;
-  color: #000;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #110518;
+  color: #00ffff;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 1.2rem;
-  padding: 15px 20px;
+  padding: 15px 30px;
   text-transform: uppercase;
   text-decoration: none;
   border: 4px solid #000;
-  box-shadow: 5px 5px 0 #000;
-  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s;
+  box-shadow: 4px 4px 0 #000;
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s, box-shadow 0.2s;
   letter-spacing: 0.1em;
 }
+
 .gacha-nav-item:nth-child(even) {
-  background: #00ffff;
+  color: #ff3399;
 }
+
 .gacha-nav-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 8px 12px 0 #000;
   filter: brightness(1.2);
 }
+
 .gacha-nav-item.is-active {
   background: #ccff00;
-  transform: translate(8px, -4px);
-  box-shadow: -4px 8px 0 #000;
+  color: #000;
+  transform: translateY(-12px);
+  box-shadow: 8px 16px 0 #000;
+}
+
+.gacha-nav-item.is-active .nav-sub {
+  color: #000;
+}
+
+.nav-index {
+  font-size: 1.5rem;
+  opacity: 0.8;
+  line-height: 1;
+}
+
+.nav-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-label {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.nav-sub {
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  opacity: 0.8;
+  margin-top: 2px;
 }
 
 /* CENTER STAGE */
@@ -1574,12 +1586,10 @@ a:hover {
   font-family: var(--font-display);
   font-size: 3rem;
   color: #00ffff;
-  text-shadow: 4px 4px 0 #000;
-  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 0 #ff3399;
+  letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
   font-weight: 900;
-  font-style: italic;
-  -webkit-text-stroke: 2px #000;
   text-transform: uppercase;
 }
 .brutalist-subtitle {
@@ -1607,3 +1617,37 @@ a:hover {
   z-index: 20;
 }
 
+/* ============================================================================
+   LOGIN SHELL — separate from gacha-shell to avoid scale transform issues
+   ============================================================================ */
+.login-shell {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(1300px 900px at 50% 110%,
+      rgba(123, 47, 255, 0.22) 0%, transparent 60%),
+    radial-gradient(900px 700px at 12% -10%,
+      rgba(123, 47, 255, 0.16) 0%, transparent 60%),
+    radial-gradient(900px 700px at 95% 110%,
+      rgba(240, 165, 0, 0.10) 0%, transparent 55%),
+    radial-gradient(700px 700px at 60% 50%,
+      rgba(33, 150, 243, 0.05) 0%, transparent 60%),
+    linear-gradient(180deg, #07070d 0%, #0a0a0f 50%, #050509 100%);
+}
+
+.login-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  gap: 0.5rem;
+  overflow-y: auto;
+}

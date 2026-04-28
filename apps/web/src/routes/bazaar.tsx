@@ -80,10 +80,10 @@ function BazaarPage() {
       {/* Header */}
       <div>
         <h1 className="brutalist-title">
-          THE_HOLLOW_BAZAAR
+          El Bazar
         </h1>
         <div className="brutalist-subtitle">
-          TRADE_ENTITIES_IN_SHARDS
+          Intercambia Personajes por Shards
         </div>
       </div>
 
@@ -105,7 +105,7 @@ function BazaarPage() {
               fontSize: "0.9rem",
             }}
           >
-            {sellableItems.length} listable {sellableItems.length === 1 ? "entity" : "entities"}
+            {sellableItems.length} {sellableItems.length === 1 ? "entidad disponible" : "entidades disponibles"}
           </span>
           <select
             value=""
@@ -128,7 +128,7 @@ function BazaarPage() {
             }}
           >
             <option value="" disabled>
-              List an entity…
+              Listar una entidad…
             </option>
             {sellableItems.map((item) => (
               <option key={item._id} value={item._id}>
@@ -159,11 +159,11 @@ function BazaarPage() {
       {/* Listings */}
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
-          Loading listings…
+          Cargando anuncios…
         </p>
       ) : isError ? (
         <p style={{ color: "var(--accent-blood)", fontFamily: "var(--font-ui)" }}>
-          Failed to load listings.
+          Error al cargar los anuncios.
         </p>
       ) : !listings || listings.length === 0 ? (
         <div
@@ -180,8 +180,7 @@ function BazaarPage() {
             textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>◈</p>
-          <p>NO_LISTINGS_FOUND</p>
+          <p>No se encontraron anuncios</p>
         </div>
       ) : (
         <div

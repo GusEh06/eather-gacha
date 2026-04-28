@@ -121,7 +121,11 @@ vaultRoutes.post("/webhook", async (c) => {
     try {
       const db = await getDb()
       const users = usersCol(db)
-      await users.updateOne({ clerkId }, { $inc: { shards: pkg.shards } })
+      await users.updateOne(
+        { clerkId },
+        { $inc: { shards: pkg.shards } },
+        { upsert: true },
+      )
       console.log(`[vault] Credited ${pkg.shards} shards to ${clerkId} (${packageId})`)
     } catch (err) {
       console.error("[vault] Failed to credit shards:", err)
