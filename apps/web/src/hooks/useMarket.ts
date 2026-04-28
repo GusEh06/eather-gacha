@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@clerk/tanstack-react-start"
+import { getAuthToken } from "../lib/auth"
 
 export interface ListingEntitySnapshot {
   nombre: string
@@ -53,7 +54,7 @@ export function useMarketSell() {
 
   return useMutation({
     mutationFn: async (vars: { userEntityId: string; priceShards: number }) => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const res = await fetch(`${getApiUrl()}/market/sell`, {
         method: "POST",
         headers: {
@@ -84,7 +85,7 @@ export function useMarketBuy() {
 
   return useMutation({
     mutationFn: async (vars: { listingId: string }) => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const res = await fetch(`${getApiUrl()}/market/buy`, {
         method: "POST",
         headers: {

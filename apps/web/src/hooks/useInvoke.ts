@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { useAuth } from "@clerk/tanstack-react-start"
+import { getAuthToken } from "../lib/auth"
 
 export interface InvokeEntity {
   _id: string
@@ -31,7 +32,7 @@ export function useInvoke() {
 
   return useMutation({
     mutationFn: async (mode: "x1" | "x10"): Promise<InvokeResponse> => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3001"
 
       const res = await fetch(`${apiUrl}/invoke`, {

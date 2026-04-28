@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@clerk/tanstack-react-start"
+import { getAuthToken } from "../lib/auth"
 
 export interface RiftEntityData {
   _id: string
@@ -47,7 +48,7 @@ export function useRiftBuy() {
 
   return useMutation({
     mutationFn: async (vars: { slotIndex: number }) => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const res = await fetch(`${getApiUrl()}/rift/buy`, {
         method: "POST",
         headers: {

@@ -27,19 +27,16 @@ export const Route = createRootRoute({
       { title: "Aether Gacha" },
     ],
     links: [
-      // Preconnect for Google Fonts performance
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       {
         rel: "preconnect",
         href: "https://fonts.gstatic.com",
         crossOrigin: "anonymous",
       },
-      // Fonts
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Rajdhani:wght@400;600&display=swap",
       },
-      // App styles
       { rel: "stylesheet", href: appCss },
     ],
   }),

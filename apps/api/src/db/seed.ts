@@ -4,7 +4,7 @@ const MONGODB_URI =
   process.env.MONGODB_URI ?? "mongodb://root:root@localhost:27017/aether?authSource=admin"
 
 const entities = [
-  // ── DUST (5) ──────────────────────────────────────────────────────────────
+  // ── DUST (2) ──────────────────────────────────────────────────────────────
   {
     nombre: "Vael",
     rareza: "dust",
@@ -29,9 +29,11 @@ const entities = [
     disponibleGacha: true,
     disponibleRift: false,
   },
+
+  // ── NEBULA (1) ───────────────────────────────────────────────────────────
   {
     nombre: "Cendra",
-    rareza: "dust",
+    rareza: "nebula",
     epoca: "Segunda Guerra Mundial",
     arquetipo: "Oráculo",
     descripcionLore:
@@ -41,9 +43,11 @@ const entities = [
     disponibleGacha: true,
     disponibleRift: false,
   },
+
+  // ── COMET (2) ────────────────────────────────────────────────────────────
   {
     nombre: "Pyk",
-    rareza: "dust",
+    rareza: "comet",
     epoca: "Dimensión sin nombre",
     arquetipo: "Trickster",
     descripcionLore:
@@ -51,11 +55,11 @@ const entities = [
     imageUrl: "/assets/entities/pyk.png",
     descripcionOjos: "ojos como puntos de polvo, casi invisibles, grises",
     disponibleGacha: true,
-    disponibleRift: false,
+    disponibleRift: true,
   },
   {
     nombre: "Grael",
-    rareza: "dust",
+    rareza: "comet",
     epoca: "Era Medieval",
     arquetipo: "Guerrero",
     descripcionLore:
@@ -63,13 +67,13 @@ const entities = [
     imageUrl: "/assets/entities/grael.png",
     descripcionOjos: "ojos como ranuras de visera, grises, sin expresión visible",
     disponibleGacha: true,
-    disponibleRift: false,
+    disponibleRift: true,
   },
 
-  // ── NEBULA (3) ───────────────────────────────────────────────────────────
+  // ── NOVA (1) ─────────────────────────────────────────────────────────────
   {
     nombre: "Fyssen",
-    rareza: "nebula",
+    rareza: "nova",
     epoca: "Era Victoriana",
     arquetipo: "Oráculo",
     descripcionLore:
@@ -77,11 +81,13 @@ const entities = [
     imageUrl: "/assets/entities/fyssen.png",
     descripcionOjos: "ojos expresivos, verde tenue, con pupilas que se dilatan al hablar",
     disponibleGacha: true,
-    disponibleRift: false,
+    disponibleRift: true,
   },
+
+  // ── PULSAR (1) ───────────────────────────────────────────────────────────
   {
     nombre: "Keth",
-    rareza: "nebula",
+    rareza: "pulsar",
     epoca: "Grecia Antigua",
     arquetipo: "Guardián",
     descripcionLore:
@@ -89,11 +95,13 @@ const entities = [
     imageUrl: "/assets/entities/keth.png",
     descripcionOjos: "ojos amigables pero huecos, verde musgo, con iris en forma de hoja",
     disponibleGacha: true,
-    disponibleRift: false,
+    disponibleRift: true,
   },
+
+  // ── ECLIPSE (1) ──────────────────────────────────────────────────────────
   {
     nombre: "Solen",
-    rareza: "nebula",
+    rareza: "eclipse",
     epoca: "El reverso del tiempo",
     arquetipo: "Devorador",
     descripcionLore:
@@ -101,87 +109,19 @@ const entities = [
     imageUrl: "/assets/entities/solen.png",
     descripcionOjos: "ojos verdes con destellos blancos que aparecen y desaparecen como estática",
     disponibleGacha: true,
-    disponibleRift: false,
+    disponibleRift: true,
   },
 
-  // ── COMET (2) ────────────────────────────────────────────────────────────
+  // ── SINGULARITY (1) ──────────────────────────────────────────────────────
   {
     nombre: "Ixar",
-    rareza: "comet",
+    rareza: "singularity",
     epoca: "Futuro Post-Colapso",
     arquetipo: "Guerrero",
     descripcionLore:
       "Soldado de una guerra que terminó antes de que él llegara. Porta armas de una tecnología que el mundo olvidó cómo fabricar.",
     imageUrl: "/assets/entities/ixar.png",
     descripcionOjos: "ojos azul frío, brillantes, que escanean constantemente el horizonte",
-    disponibleGacha: true,
-    disponibleRift: true,
-  },
-  {
-    nombre: "Nyra",
-    rareza: "comet",
-    epoca: "El espacio dentro de los sueños olvidados",
-    arquetipo: "Oráculo",
-    descripcionLore:
-      "Habita en los sueños que nadie recuerda al despertar. Su cuerpo está hecho de esas imágenes fragmentadas.",
-    imageUrl: "/assets/entities/nyra.png",
-    descripcionOjos: "ojos azul pálido con constelaciones diminutas flotando en el iris",
-    disponibleGacha: true,
-    disponibleRift: true,
-  },
-
-  // ── NOVA (1) ─────────────────────────────────────────────────────────────
-  {
-    nombre: "Zareth",
-    rareza: "nova",
-    epoca: "Mesopotamia Antigua",
-    arquetipo: "Devorador",
-    descripcionLore:
-      "Dios-bestia menor que sobrevivió a su propio panteón. Ahora consume los nombres de deidades olvidadas para mantenerse relevante.",
-    imageUrl: "/assets/entities/zareth.png",
-    descripcionOjos: "ojos púrpura intenso con aura visible, magnéticos, que no se pueden sostener por mucho tiempo",
-    disponibleGacha: true,
-    disponibleRift: true,
-  },
-
-  // ── PULSAR (1) ───────────────────────────────────────────────────────────
-  {
-    nombre: "Auren",
-    rareza: "pulsar",
-    epoca: "El vacío entre constelaciones",
-    arquetipo: "Guardián",
-    descripcionLore:
-      "Guardian del espacio entre las estrellas. No protege la luz — protege la oscuridad necesaria para que la luz tenga sentido.",
-    imageUrl: "/assets/entities/auren.png",
-    descripcionOjos: "cuatro pupilas en cruz, doradas, que rotan lentamente emitiendo calor visible",
-    disponibleGacha: true,
-    disponibleRift: true,
-  },
-
-  // ── ECLIPSE (1) ──────────────────────────────────────────────────────────
-  {
-    nombre: "Khal-Moru",
-    rareza: "eclipse",
-    epoca: "Egipto Antiguo",
-    arquetipo: "Devorador",
-    descripcionLore:
-      "Guardián del umbral de la duat que se negó a dejar pasar incluso a los muertos. Juzgó tan bien que el propio Osiris lo expulsó por ser más severo que él.",
-    imageUrl: "/assets/entities/khal-moru.png",
-    descripcionOjos: "ojos que son llamas rojas sobre negro absoluto, parpadeando irregularmente como brasas que no se apagan",
-    disponibleGacha: true,
-    disponibleRift: true,
-  },
-
-  // ── SINGULARITY (1) ──────────────────────────────────────────────────────
-  {
-    nombre: "El Primero Sin Nombre",
-    rareza: "singularity",
-    epoca: "Antes de cualquier época",
-    arquetipo: "Devorador",
-    descripcionLore:
-      "Existió antes de que el concepto de existencia se definiera. No tiene nombre porque el lenguaje no existía cuando llegó. Lo que ves no es su forma real — es la aproximación más cercana que tu mente puede generar.",
-    imageUrl: "/assets/entities/el-primero.png",
-    descripcionOjos: "un solo ojo enorme, iridiscente, que absorbe la luz a su alrededor y la reemite en frecuencias que no deberían existir",
     disponibleGacha: true,
     disponibleRift: false,
   },

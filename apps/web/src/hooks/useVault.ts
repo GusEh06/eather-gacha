@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { useAuth } from "@clerk/tanstack-react-start"
+import { getAuthToken } from "../lib/auth"
 
 const getApiUrl = () =>
   (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:3001"
@@ -10,7 +11,7 @@ export function useCheckout() {
 
   return useMutation({
     mutationFn: async (packageId: string) => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const res = await fetch(`${getApiUrl()}/vault/create-checkout`, {
         method: "POST",
         headers: {

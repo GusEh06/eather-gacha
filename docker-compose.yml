@@ -33,7 +33,11 @@ services:
       mongo:
         condition: service_healthy
     volumes:
-      - ./apps/api/src:/app/src   # hot reload en desarrollo
+      - ./apps/api:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
 
   web:
     build:
@@ -47,7 +51,11 @@ services:
     depends_on:
       - api
     volumes:
-      - ./apps/web/src:/app/src   # hot reload en desarrollo
+      - ./apps/web:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
 
 volumes:
   mongo_data:
