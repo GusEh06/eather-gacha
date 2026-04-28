@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router"
-import { useAuth, SignInButton, UserButton } from "@clerk/tanstack-react-start"
+import { useAuth, useUser } from "@clerk/tanstack-react-start"
+import { useMemo, useState } from "react"
 import { ShardsDisplay } from "./ShardsDisplay"
 import { useUserProfile } from "../../hooks/useUserProfile"
+import { AuthPanel } from "./AuthPanel"
 
 const NAV_LINKS = [
   { to: "/",           label: "The Altar" },
@@ -13,7 +15,17 @@ const NAV_LINKS = [
 
 export function Navbar() {
   const { isSignedIn } = useAuth()
+  const { user } = useUser()
   const { data: profile } = useUserProfile()
+  const [authOpen, setAuthOpen] = useState(false)
+
+  const binderName = useMemo(() => {
+    const userTag =
+      user?.username?.trim() ||
+      user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
+      "unknown"
+    return `Aether Binder [${userTag}]`
+  }, [user])
 
   return (
     <nav
@@ -74,19 +86,26 @@ export function Navbar() {
         {isSignedIn ? (
           <>
             <ShardsDisplay amount={profile?.shards ?? 0} />
-            <UserButton />
+            <button
+              className="btn-secondary"
+              style={{ fontSize: "0.82rem", padding: "0.35rem 0.7rem" }}
+              onClick={() => setAuthOpen(true)}
+            >
+              {binderName}
+            </button>
           </>
         ) : (
-          <SignInButton mode="modal">
-            <button
-              className="btn-primary"
-              style={{ fontSize: "0.85rem", padding: "0.4rem 1rem" }}
-            >
-              Sign In
-            </button>
-          </SignInButton>
+          <button
+            className="btn-primary"
+            style={{ fontSize: "0.85rem", padding: "0.4rem 1rem" }}
+            onClick={() => setAuthOpen(true)}
+          >
+            Sign In
+          </button>
         )}
       </div>
+
+      <AuthPanel open={authOpen} onClose={() => setAuthOpen(false)} />
     </nav>
   )
 }

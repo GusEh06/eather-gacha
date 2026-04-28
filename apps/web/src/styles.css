@@ -224,6 +224,149 @@ a:hover {
   transform: translateY(0);
 }
 
+/* ─── Custom Auth Panel ─────────────────────────────────────────────────────── */
+.auth-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(10, 10, 15, 0.74);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+}
+
+.auth-panel {
+  width: min(440px, 100%);
+  border-radius: 12px;
+  border: 1px solid var(--border-active);
+  background:
+    radial-gradient(circle at 10% 10%, rgba(123, 47, 255, 0.16), transparent 45%),
+    radial-gradient(circle at 90% 100%, rgba(240, 165, 0, 0.12), transparent 45%),
+    var(--bg-surface);
+  padding: 1rem;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.42);
+}
+
+.auth-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.auth-header h2 {
+  font-family: var(--font-display);
+  color: var(--accent-gold);
+  letter-spacing: 0.08em;
+}
+
+.auth-close {
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 6px;
+  padding: 0.25rem 0.45rem;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+
+.auth-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.auth-tab {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: rgba(22, 33, 62, 0.4);
+  color: var(--text-secondary);
+  padding: 0.45rem 0.7rem;
+  font-family: var(--font-ui);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-tab-active {
+  border-color: var(--accent-aether);
+  color: var(--text-primary);
+  background: rgba(123, 47, 255, 0.2);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.auth-form input {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: rgba(10, 10, 15, 0.8);
+}
+
+.auth-form input:focus {
+  outline: none;
+  border-color: var(--accent-aether);
+  box-shadow: 0 0 0 2px rgba(123, 47, 255, 0.18);
+}
+
+.auth-error,
+.auth-success,
+.auth-subtitle,
+.auth-binder-name {
+  font-family: var(--font-ui);
+}
+
+.auth-error {
+  color: var(--accent-blood);
+  font-size: 0.9rem;
+}
+
+.auth-success {
+  color: var(--rarity-nebula);
+  font-size: 0.9rem;
+}
+
+.auth-signed-in {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.auth-inline-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.auth-binder-name {
+  color: var(--accent-gold);
+  font-size: 1.03rem;
+  font-weight: 600;
+}
+
+.auth-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 /* ─── Shards Bump (applied on remount via key={amount}) ─────────────────────── */
 .shards-bump {
   display: inline-block;
