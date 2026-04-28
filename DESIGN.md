@@ -89,9 +89,21 @@ El ícono de Singularity tiene una animación CSS de rotación lenta permanente.
 
 ---
 
-## 5. Diseño por Pantalla
+## 5. Layout Maestro Global (Estructura Base)
 
-### 5.1 The Altar
+Para lograr un diseño "espléndido" que emule la magia de los gachas premium sin perder nuestra arquitectura, todas las pantallas principales (Altar, Bazaar, Rift, Vault) seguirán este esquema de Layout Maestro:
+
+- **Sidebar Izquierdo (Navegación):** Menú vertical con botones pesados/góticos (The Altar, The Bazaar, The Rift, The Vault, Collection).
+- **Esquina Superior Derecha (HUD de Recursos):** Display prominente de Shards y Pity Counters, con barras de progreso estilizadas.
+- **Centro (Escenario Principal):** El elemento visual foco (el portal del Rift, el círculo de invocación del Altar). 
+- **Esquina Inferior Derecha (Llamados a la Acción):** Botones de acción principal (ej. "Invocar x1", "Invocar x10") gigantes, asimétricos y con efectos de partículas animadas.
+- **Esquina Inferior Izquierda (Contexto):** Banners de eventos (ej. "Evento: Corazones Cósmicos") o detalles del ítem actual.
+
+---
+
+## 6. Diseño por Pantalla
+
+### 6.1 The Altar
 
 **Lo que requiere asset diseñado:**
 - Las entidades (imágenes generadas con IA, estilo consistente)
@@ -118,7 +130,7 @@ El ícono de Singularity tiene una animación CSS de rotación lenta permanente.
 
 ---
 
-### 5.2 The Hollow Bazaar
+### 6.2 The Hollow Bazaar
 
 **Lo que requiere asset diseñado:**
 - Las imágenes de entidades (las mismas del catálogo)
@@ -146,7 +158,7 @@ El border de la card usa el color de rareza. El glow en hover es el mismo color 
 
 ---
 
-### 5.3 The Rift
+### 6.3 The Rift
 
 **Lo que requiere asset diseñado:**
 - Imágenes de entidades
@@ -154,7 +166,7 @@ El border de la card usa el color de rareza. El glow en hover es el mismo color 
 **Lo que se hace en código:**
 - Portal: CSS `radial-gradient` animado con `border-radius: 50%` y una rotación lenta de capas
 - Marco del portal: CSS border con constelaciones grabadas (SVG inline con puntos y líneas tenues)
-- Efecto de "llegando del portal": entidad aparece con un scale desde 0 + opacity 0, Framer Motion
+- Efecto de "llegando del portal": entidad aparece con un scale desde 0 + opacity 0, animejs
 - Contador regresivo: lógica JavaScript + fuente display grande
 
 **Layout:**
@@ -168,7 +180,7 @@ El border de la card usa el color de rareza. El glow en hover es el mismo color 
 
 ---
 
-### 5.4 The Aether Vault
+### 6.4 The Aether Vault
 
 **Lo que requiere asset diseñado:**
 - Nada. Completamente en código.
@@ -196,7 +208,7 @@ El paquete "Singularity Core" tiene una border animada con el gradient iridiscen
 
 ---
 
-## 6. Secuencia de Invocación — Especificación de Animación
+## 7. Secuencia de Invocación — Especificación de Animación
 
 Esta es la pantalla más importante. Cada frame importa.
 
@@ -206,7 +218,7 @@ Esta es la pantalla más importante. Cada frame importa.
 0ms      → Click en "Invocar"
 0-50ms   → Validación + descuento de Shards (silencioso)
 50ms     → FASE 1: Activación
-  50-300ms   Runas se iluminan (Framer Motion, stagger 50ms entre runas)
+  50-300ms   Runas se iluminan (animejs, stagger 50ms entre runas)
   200ms      Screen shake CSS arranca (suave, 2-3px amplitude)
   300ms      Nubes se aceleran (CSS transition en animation-duration)
   500ms      Eclipse de luna inicia (clip-path crece, 1000ms duration)
@@ -214,7 +226,7 @@ Esta es la pantalla más importante. Cada frame importa.
   1500ms     Fade a negro (opacity 0 en 300ms)
   1800ms     HIT STOP — todo se pausa 100ms
 1900ms   → FASE 3: Ojos
-  1900ms     Primer par de ojos aparece (Framer Motion fade in)
+  1900ms     Primer par de ojos aparece (animejs fade in)
   2000ms     Segundo par (si rareza ≥ Nebula)
   ...        Escalonado por rareza
   
@@ -225,7 +237,7 @@ Esta es la pantalla más importante. Cada frame importa.
   [SINGULARITY]  
   2400ms     Flash negro total (200ms)
   2600ms     Silencio absoluto 200ms
-  2800ms     Dos ojos enormes aparecen (scale desde 0, Framer Motion spring)
+  2800ms     Dos ojos enormes aparecen (scale desde 0, animejs spring)
 
 3500ms   → FASE 4: Reveal
   3500ms     Squash (scale X 1.3, scale Y 0.7, 80ms)
@@ -233,7 +245,7 @@ Esta es la pantalla más importante. Cada frame importa.
   3660ms     Stretch — entidad explota hacia espectador (scale 0.1 → 1.1 → 1.0)
   3660ms     tsParticles burst con preset de rareza
   3900ms     Entidad settle en posición final
-  4000ms     Nombre + rareza aparecen (fade in Framer Motion)
+  4000ms     Nombre + rareza aparecen (fade in animejs)
   4200ms     Botones de acción aparecen
 ```
 
@@ -270,7 +282,7 @@ Se activa añadiendo la clase `.shake` al container y se remueve después de la 
 
 ---
 
-## 7. El Gradient Iridiscente (Singularity)
+## 8. El Gradient Iridiscente (Singularity)
 
 Para todo lo relacionado con rareza Singularity se usa este gradient animado:
 
@@ -293,7 +305,7 @@ Para todo lo relacionado con rareza Singularity se usa este gradient animado:
 
 ---
 
-## 8. Idle Animation de Entidades
+## 9. Idle Animation de Entidades
 
 Las entidades en el Bazaar y en el Rift tienen una animación idle de "respiración" implementada en CSS:
 
@@ -318,7 +330,7 @@ Las entidades en el Bazaar y en el Rift tienen una animación idle de "respiraci
 
 ---
 
-## 9. Guía de Generación de Entidades con IA
+## 10. Guía de Generación de Entidades con IA
 
 ### Prompt base de estilo (aplicar a todas las entidades)
 ```
@@ -350,7 +362,7 @@ Ejemplos:
 
 ---
 
-## 10. Qué Requiere Asset vs Qué es Código
+## 11. Qué Requiere Asset vs Qué es Código
 
 ### Assets obligatorios (generados con IA)
 | Asset | Cantidad | Notas |

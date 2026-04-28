@@ -39,20 +39,13 @@ function RiftPage() {
       <div className="rift-portal-bg" aria-hidden="true" />
 
       {/* Header */}
-      <div style={{ marginBottom: "2rem" }}>
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "2rem",
-            color: "var(--accent-aether)",
-            letterSpacing: "0.1em",
-          }}
-        >
-          The Rift
+      <div>
+        <h1 className="brutalist-title">
+          THE_RIFT
         </h1>
-        <p style={{ color: "var(--text-secondary)", marginTop: "0.4rem" }}>
-          Entities drift through the rift for a limited time. Buy directly with Shards.
-        </p>
+        <div className="brutalist-subtitle">
+          LIMITED_TIME_DRIFTS
+        </div>
         <div
           style={{
             marginTop: "0.75rem",

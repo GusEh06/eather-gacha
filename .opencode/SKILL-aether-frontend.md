@@ -11,7 +11,7 @@ description: >
 
 ## Stack
 - **Framework:** TanStack Start (file-based routing + data loaders)
-- **Animaciones:** Framer Motion + tsParticles + CSS keyframes
+- **Animaciones:** animejs + tsParticles + CSS keyframes (Framer Motion ha sido reemplazado por animejs para mayor "magia" y precisión en timelines)
 - **Estado del servidor:** TanStack Query
 - **Auth:** Clerk React SDK
 - **Estilos:** CSS Modules o Tailwind (sin utility-first puro — usar clases semánticas)
@@ -24,7 +24,14 @@ Las variables de rareza se aplican inline: `style={{ "--rarity-color": "var(--ra
 - Display: `Cinzel` (Google Fonts) — nombres, títulos
 - UI: `Rajdhani` (Google Fonts) — precios, botones, etiquetas
 
-## Estructura de Rutas (TanStack Start)
+## Estructura de Rutas y Layout Maestro
+Todas las rutas comparten un **Layout Maestro** inspirado en la estética de los gachas premium (magia, fantasía oscura):
+- **Sidebar Izquierdo:** Navegación principal (Altar, Bazaar, Rift, Vault, Collection) con botones de aspecto pesado/gótico.
+- **Arriba Derecha:** HUD de recursos (Shards, Pity) con estilo visual temático.
+- **Centro:** Escenario principal donde ocurre la acción.
+- **Abajo Derecha:** Botones de acción principales (ej. Invocar).
+- **Abajo Izquierda:** Contexto y Banners de eventos actuales.
+
 ```
 /                  → The Altar (pantalla principal post-login)
 /bazaar            → The Hollow Bazaar
@@ -39,8 +46,8 @@ Las variables de rareza se aplican inline: `style={{ "--rarity-color": "var(--ra
 Props: `entity`, `price`, `sellerName`, `onClick`
 - Border color = `var(--rarity-{rareza})`
 - Box-shadow exterior = color de rareza al 40% opacity
-- Idle animation: `entityFloat` + `entityGlow` CSS keyframes
-- En hover: glow se intensifica, scale 1.02 con Framer Motion
+- Idle animation: `entityFloat` + `entityGlow` CSS keyframes (o con `animejs` en direction 'alternate')
+- En hover: glow se intensifica, scale 1.02 animado con `animejs`
 
 ### `<RarityBadge />`
 Props: `rareza`
@@ -51,7 +58,7 @@ Props: `rareza`
 Props: `amount`
 - Siempre visible en el header/navbar
 - Muestra el ícono ◈ + cantidad formateada con separador de miles
-- Animación de "increment" cuando los Shards aumentan (Framer Motion `animate`)
+- Animación de "increment" cuando los Shards aumentan (usar interpolación con `animejs` sobre el valor de texto)
 
 ## Secuencia de Invocación — Implementación
 
@@ -66,31 +73,65 @@ type InvokePhase =
   | "complete"      // entidad visible + botones
 ```
 
-### Screen Shake
+### Screen Shake con animejs
 ```typescript
-// Añadir/remover clase en el container principal
-const triggerShake = (duration: number) => {
-  document.getElementById("altar-container")?.classList.add("shake")
-  setTimeout(() => {
-    document.getElementById("altar-container")?.classList.remove("shake")
-  }, duration)
+const triggerShake = () => {
+  anime({
+    targets: '#altar-container',
+    translateX: [
+      { value: -2, duration: 20 },
+      { value: 2, duration: 20 },
+      { value: -1, duration: 20 },
+      { value: 1, duration: 20 },
+      { value: 0, duration: 20 }
+    ],
+    loop: 3,
+    easing: 'easeInOutSine'
+  });
 }
 ```
 
-### Hit Stop
+### Animación de Invocación (Timeline con animejs)
 ```typescript
-// Pausar animaciones por N milisegundos
-const hitStop = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
-// Usar con await dentro de la secuencia async de la invocación
+// Usando anime.timeline para sincronizar la aparición con gran detalle
+const invocationTimeline = anime.timeline({
+  easing: 'easeOutExpo',
+  autoplay: false
+});
+
+invocationTimeline
+  .add({
+    targets: '.runes',
+    opacity: [0, 1],
+    delay: anime.stagger(50) // stagger mágico para las runas
+  })
+  .add({
+    targets: '.moon-eclipse',
+    clipPath: ['circle(0% at 50% 50%)', 'circle(100% at 50% 50%)'],
+    duration: 1000,
+    easing: 'linear'
+  }, '+=300'); // offset para dar tiempo al shake
 ```
 
-### Squash & Stretch con Framer Motion
+### Squash & Stretch con animejs
 ```typescript
-const entityRevealVariants = {
-  hidden:  { scale: 0.1, opacity: 0 },
-  squash:  { scaleX: 1.4, scaleY: 0.6, transition: { duration: 0.08 } },
-  stretch: { scaleX: 0.8, scaleY: 1.2, transition: { duration: 0.1 } },
-  settle:  { scale: 1,   opacity: 1,  transition: { type: "spring", stiffness: 300 } }
+const revealEntity = () => {
+  anime({
+    targets: '.entity-container',
+    scaleX: [
+      { value: 0.1, duration: 0 },
+      { value: 1.4, duration: 80, easing: 'easeOutQuad' }, // Squash
+      { value: 0.8, duration: 100, easing: 'easeInQuad' }, // Stretch
+      { value: 1, duration: 300, easing: 'spring(1, 80, 10, 0)' } // Settle
+    ],
+    scaleY: [
+      { value: 0.1, duration: 0 },
+      { value: 0.6, duration: 80, easing: 'easeOutQuad' },
+      { value: 1.2, duration: 100, easing: 'easeInQuad' },
+      { value: 1, duration: 300, easing: 'spring(1, 80, 10, 0)' }
+    ],
+    opacity: { value: [0, 1], duration: 100 }
+  });
 }
 ```
 

@@ -3,6 +3,7 @@ import { useState } from "react"
 import { useCheckout } from "../hooks/useVault"
 import { PackageCard } from "../components/vault/PackageCard"
 import { ConfirmModal } from "../components/vault/ConfirmModal"
+import { CtaSlot } from "../components/ui/CtaSlot"
 import type { VaultPackage } from "../components/vault/PackageCard"
 
 export const Route = createFileRoute("/vault")({ component: VaultPage })
@@ -43,14 +44,17 @@ function VaultPage() {
       {isSuccess && (
         <div
           style={{
-            background: "rgba(76,175,80,0.12)",
-            border: "1px solid var(--rarity-nebula)",
-            borderRadius: "6px",
-            padding: "0.75rem 1rem",
+            background: "#ccff00",
+            border: "4px solid #000",
+            boxShadow: "6px 6px 0 #000",
+            padding: "1rem",
             marginBottom: "1.5rem",
-            fontFamily: "var(--font-ui)",
-            color: "var(--rarity-nebula)",
-            fontSize: "0.95rem",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            color: "#000",
+            fontSize: "1rem",
+            textTransform: "uppercase",
+            maxWidth: "960px"
           }}
         >
           Payment successful — your Shards have been credited to your account!
@@ -60,14 +64,17 @@ function VaultPage() {
       {isCancelled && (
         <div
           style={{
-            background: "rgba(192,57,43,0.12)",
-            border: "1px solid var(--accent-blood)",
-            borderRadius: "6px",
-            padding: "0.75rem 1rem",
+            background: "#ff3399",
+            border: "4px solid #000",
+            boxShadow: "6px 6px 0 #000",
+            padding: "1rem",
             marginBottom: "1.5rem",
-            fontFamily: "var(--font-ui)",
-            color: "var(--accent-blood)",
-            fontSize: "0.95rem",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            color: "#000",
+            fontSize: "1rem",
+            textTransform: "uppercase",
+            maxWidth: "960px"
           }}
         >
           Payment cancelled. Your Shards were not charged.
@@ -75,20 +82,14 @@ function VaultPage() {
       )}
 
       {/* ── Header ── */}
-      <h1
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "2rem",
-          color: "var(--accent-aether)",
-          letterSpacing: "0.1em",
-          marginBottom: "0.5rem",
-        }}
-      >
-        The Aether Vault
-      </h1>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-        Acquire Shards to power your invocations. Secured by Stripe.
-      </p>
+      <div>
+        <h1 className="brutalist-title">
+          THE_AETHER_VAULT
+        </h1>
+        <div className="brutalist-subtitle">
+          ACQUIRE_SHARDS. SECURED_BY_STRIPE.
+        </div>
+      </div>
 
       {/* ── Package grid ── */}
       <div
@@ -114,6 +115,18 @@ function VaultPage() {
         loading={checkout.isPending}
         error={checkout.error ? (checkout.error as Error).message : null}
       />
+
+      {/* ── CTA slot — quick-pick gold package shortcut ── */}
+      <CtaSlot>
+        <button
+          className="aether-cta aether-cta--gold"
+          onClick={() =>
+            setSelectedPkg(PACKAGES.find((p) => p.id === "nova_surge") ?? null)
+          }
+        >
+          Acquire Nova Surge
+        </button>
+      </CtaSlot>
     </div>
   )
 }

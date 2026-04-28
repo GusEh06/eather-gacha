@@ -31,30 +31,30 @@ function CollectionPage() {
   if (!isSignedIn) {
     return (
       <div className="page">
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "2rem",
-            color: "var(--accent-aether)",
-            letterSpacing: "0.1em",
-            marginBottom: "1.5rem",
-          }}
-        >
-          Collection
-        </h1>
+        <div>
+          <h1 className="brutalist-title">
+            COLLECTION
+          </h1>
+          <div className="brutalist-subtitle">
+            YOUR_BOUND_ENTITIES
+          </div>
+        </div>
         <div
           style={{
             textAlign: "center",
             padding: "4rem 2rem",
-            color: "var(--text-muted)",
-            fontFamily: "var(--font-ui)",
-            border: "1px dashed var(--border-subtle)",
-            borderRadius: "8px",
+            color: "#000",
+            background: "#ff3399",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            border: "6px solid #000",
+            boxShadow: "12px 12px 0 #000",
             maxWidth: "480px",
+            textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>◈</p>
-          <p>Sign in to see your collection.</p>
+          <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>👤</p>
+          <p>SIGN_IN_REQUIRED</p>
         </div>
       </div>
     )
@@ -62,20 +62,14 @@ function CollectionPage() {
 
   return (
     <div className="page">
-      <h1
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "2rem",
-          color: "var(--accent-aether)",
-          letterSpacing: "0.1em",
-          marginBottom: "0.5rem",
-        }}
-      >
-        Collection
-      </h1>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-        Your bound entities, Aether Binder.
-      </p>
+      <div>
+        <h1 className="brutalist-title">
+          COLLECTION
+        </h1>
+        <div className="brutalist-subtitle">
+          YOUR_BOUND_ENTITIES
+        </div>
+      </div>
 
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
@@ -90,15 +84,18 @@ function CollectionPage() {
           style={{
             textAlign: "center",
             padding: "4rem 2rem",
-            color: "var(--text-muted)",
-            fontFamily: "var(--font-ui)",
-            border: "1px dashed var(--border-subtle)",
-            borderRadius: "8px",
+            color: "#000",
+            background: "#00ffff",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            border: "6px solid #000",
+            boxShadow: "12px 12px 0 #000",
             maxWidth: "480px",
+            textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>◈</p>
-          <p>No entities yet. Visit The Altar to begin your collection.</p>
+          <p style={{ fontSize: "3rem", marginBottom: "1rem" }}>◈</p>
+          <p>NO_ENTITIES_BOUND</p>
         </div>
       ) : (
         <>

@@ -6,7 +6,7 @@ import {
 } from "@tanstack/react-router"
 import { ClerkProvider } from "@clerk/tanstack-react-start"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { Navbar } from "../components/ui/Navbar"
+import { MasterLayout } from "../components/ui/MasterLayout"
 
 import appCss from "../styles.css?url"
 
@@ -72,10 +72,9 @@ function RootLayout() {
   return (
     <ClerkProvider publishableKey={clerkKey}>
       <QueryClientProvider client={queryClient}>
-        <Navbar />
-        <main>
+        <MasterLayout>
           <Outlet />
-        </main>
+        </MasterLayout>
       </QueryClientProvider>
     </ClerkProvider>
   )
