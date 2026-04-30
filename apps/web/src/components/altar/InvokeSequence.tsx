@@ -227,34 +227,8 @@ export function InvokeSequence() {
         }}
       />
 
-      {/* CTA slot — primary ritual actions live in the layout's bottom-right.
-          Hidden during the busy phases so the scene can breathe. */}
-      {phase === "idle" && isSignedIn && (
-        <CtaSlot>
-          {shards < 160 ? (
-            <a className="aether-cta aether-cta--gold" href="/vault">
-              Acquire Shards
-            </a>
-          ) : (
-            <>
-              <button
-                className="aether-cta aether-cta--ghost"
-                disabled={shards < 160}
-                onClick={() => handleInvoke("x1")}
-              >
-                Invoke ×1 · ◈ 160
-              </button>
-              <button
-                className="aether-cta aether-cta--gold"
-                disabled={shards < 1600}
-                onClick={() => handleInvoke("x10")}
-              >
-                Invoke ×10 · ◈ 1,600
-              </button>
-            </>
-          )}
-        </CtaSlot>
-      )}
+
+
     </div>
   )
 }

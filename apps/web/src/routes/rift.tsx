@@ -107,9 +107,8 @@ function RiftPage() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-            gap: "1.5rem",
-            maxWidth: "960px",
+            gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+            gap: "1.25rem",
           }}
         >
           {rift.slots.map((slot) => (

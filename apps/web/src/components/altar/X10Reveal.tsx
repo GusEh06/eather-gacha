@@ -29,7 +29,16 @@ function EntityCard({ result, delay }: { result: InvokeResult; delay: number }) 
         gap: "0.4rem",
       }}
     >
-      <span style={{ fontSize: "2.4rem" }}>{cfg.icon}</span>
+      <img
+          src={result.entity.imageUrl}
+          alt={result.entity.nombre}
+          style={{
+            width: "70px",
+            height: "70px",
+            objectFit: "cover",
+            borderRadius: "6px",
+          }}
+        />
       <span
         style={{
           fontFamily: "var(--font-display)",

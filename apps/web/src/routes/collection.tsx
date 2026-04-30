@@ -132,12 +132,31 @@ function CollectionPage() {
                   <div
                     className="entity-idle"
                     style={{
-                      fontSize: "2.5rem",
-                      color: config?.color,
+                      width: "100%",
+                      height: "140px",
+                      overflow: "hidden",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                       "--rarity-color": config?.color,
                     } as React.CSSProperties}
                   >
-                    {config?.icon ?? "◈"}
+                    {item.entity?.imageUrl ? (
+                      <img
+                        src={item.entity.imageUrl}
+                        alt={item.entity.nombre ?? "Entity"}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          padding: "0.5rem",
+                          filter: `drop-shadow(0 2px 8px ${config?.color}66)`,
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: "2.5rem", color: config?.color }}>{config?.icon ?? "◈"}</span>
+                    )}
                   </div>
                   <p
                     style={{
@@ -150,16 +169,7 @@ function CollectionPage() {
                     {item.entity?.nombre ?? "Unknown"}
                   </p>
                   <RarityBadge rareza={rarity} />
-                  <p
-                    style={{
-                      fontFamily: "var(--font-ui)",
-                      fontSize: "0.75rem",
-                      color: "var(--text-muted)",
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    vía {item.obtainedVia}
-                  </p>
+
                   {/* List on Bazaar — only for tradable rarities */}
                   {!NON_BAZAAR_RARITIES.includes(
                     item.entity?.rareza as (typeof NON_BAZAAR_RARITIES)[number]

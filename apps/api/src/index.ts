@@ -10,6 +10,8 @@ import vaultRoutes from "./routes/vault"
 import { startRiftCron } from "./crons/riftRotation"
 import { getDb } from "./db/client"
 
+import adminRoutes from "./routes/admin"
+
 const app = new Hono()
 
 app.use("*", logger())
@@ -19,7 +21,7 @@ app.use(
     origin: process.env.WEB_APP_URL ?? "http://localhost:3000",
     credentials: true,
     allowHeaders: ["Content-Type", "Authorization"],
-    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
 )
 
@@ -33,6 +35,7 @@ app.route("/invoke", invokeRoutes)
 app.route("/market", marketRoutes)
 app.route("/rift", riftRoutes)
 app.route("/vault", vaultRoutes)
+app.route("/admin", adminRoutes)
 
 // Start midnight Rift rotation cron after DB is ready
 getDb()

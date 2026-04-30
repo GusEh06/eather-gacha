@@ -3,6 +3,9 @@ import { MongoClient, ObjectId } from "mongodb"
 const MONGODB_URI =
   process.env.MONGODB_URI ?? "mongodb://root:root@localhost:27017/aether?authSource=admin"
 
+const FIREBASE_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || "desarrollo-ix-parcial-2.firebasestorage.app"
+const getImageUrl = (filename: string) => `https://firebasestorage.googleapis.com/v0/b/${FIREBASE_BUCKET}/o/entities%2F${filename}?alt=media`
+
 const entities = [
   // ── DUST (2) ──────────────────────────────────────────────────────────────
   {
@@ -12,7 +15,7 @@ const entities = [
     arquetipo: "Guardián",
     descripcionLore:
       "Un espíritu menor del frío, olvidado antes de tener nombre propio. Vaga entre grietas de glaciares buscando algo que ya no recuerda.",
-    imageUrl: "/assets/entities/vael.png",
+    imageUrl: getImageUrl("vael.png"),
     descripcionOjos: "ojos redondos, grises sin iris, como monedas viejas congeladas",
     disponibleGacha: true,
     disponibleRift: false,
@@ -24,7 +27,7 @@ const entities = [
     arquetipo: "Trickster",
     descripcionLore:
       "Espíritu de tablilla dañada, sus palabras son fragmentos ilegibles. Sonríe siempre, aunque nadie sabe por qué.",
-    imageUrl: "/assets/entities/morr.png",
+    imageUrl: getImageUrl("morr.png"),
     descripcionOjos: "ojos pequeños y brillantes, grises, que parpadean fuera de sincronía",
     disponibleGacha: true,
     disponibleRift: false,
@@ -38,7 +41,7 @@ const entities = [
     arquetipo: "Oráculo",
     descripcionLore:
       "Sombra de una ciudad bombardeada. Sus predicciones son siempre correctas, pero llegan demasiado tarde para ser útiles.",
-    imageUrl: "/assets/entities/cendra.png",
+    imageUrl: getImageUrl("cendra.png"),
     descripcionOjos: "ojos apagados, grises ceniza, que miran sin enfocar en nada concreto",
     disponibleGacha: true,
     disponibleRift: false,
@@ -52,7 +55,7 @@ const entities = [
     arquetipo: "Trickster",
     descripcionLore:
       "Una anomalía menor que existe entre parpadeos. Nadie lo ve llegar ni marcharse. Solo deja evidencia de que estuvo.",
-    imageUrl: "/assets/entities/pyk.png",
+    imageUrl: getImageUrl("pyk.png"),
     descripcionOjos: "ojos como puntos de polvo, casi invisibles, grises",
     disponibleGacha: true,
     disponibleRift: true,
@@ -64,7 +67,7 @@ const entities = [
     arquetipo: "Guerrero",
     descripcionLore:
       "Un caballero maldito cuya historia fue borrada de todos los registros. Lucha sin propósito, por hábito.",
-    imageUrl: "/assets/entities/grael.png",
+    imageUrl: getImageUrl("grael.png"),
     descripcionOjos: "ojos como ranuras de visera, grises, sin expresión visible",
     disponibleGacha: true,
     disponibleRift: true,
@@ -78,7 +81,7 @@ const entities = [
     arquetipo: "Oráculo",
     descripcionLore:
       "Espectro de una médium que encontró algo real durante una sesión. Ahora sabe demasiado y no puede dejar de hablar sobre ello.",
-    imageUrl: "/assets/entities/fyssen.png",
+    imageUrl: getImageUrl("fyssen.png"),
     descripcionOjos: "ojos expresivos, verde tenue, con pupilas que se dilatan al hablar",
     disponibleGacha: true,
     disponibleRift: true,
@@ -92,7 +95,7 @@ const entities = [
     arquetipo: "Guardián",
     descripcionLore:
       "Ninfa corrompida del Tártaro. Protege un umbral que ya no existe, por deber más que por convicción.",
-    imageUrl: "/assets/entities/keth.png",
+    imageUrl: getImageUrl("keth.png"),
     descripcionOjos: "ojos amigables pero huecos, verde musgo, con iris en forma de hoja",
     disponibleGacha: true,
     disponibleRift: true,
@@ -106,7 +109,7 @@ const entities = [
     arquetipo: "Devorador",
     descripcionLore:
       "Come recuerdos de momentos que nunca ocurrieron. No es malicioso — simplemente tiene hambre.",
-    imageUrl: "/assets/entities/solen.png",
+    imageUrl: getImageUrl("solen.png"),
     descripcionOjos: "ojos verdes con destellos blancos que aparecen y desaparecen como estática",
     disponibleGacha: true,
     disponibleRift: true,
@@ -120,7 +123,7 @@ const entities = [
     arquetipo: "Guerrero",
     descripcionLore:
       "Soldado de una guerra que terminó antes de que él llegara. Porta armas de una tecnología que el mundo olvidó cómo fabricar.",
-    imageUrl: "/assets/entities/ixar.png",
+    imageUrl: getImageUrl("ixar.png"),
     descripcionOjos: "ojos azul frío, brillantes, que escanean constantemente el horizonte",
     disponibleGacha: true,
     disponibleRift: false,

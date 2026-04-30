@@ -120,13 +120,7 @@ export function MasterLayout({ children }: MasterLayoutProps) {
         </div>
 
         <header className="gacha-hud" ref={hudRef}>
-          <div className="gacha-hud-icon" title={`Pity: ${pity}/90`}>
-            👁
-          </div>
-          <div className="gacha-hud-icon" title={`Shards: ${shards}`}>
-            ◈
-          </div>
-          <div className="gacha-hud-icon gacha-hud-user">
+          <div className="gacha-hud-profile">
             {isSignedIn ? (
               <UserButton />
             ) : (
