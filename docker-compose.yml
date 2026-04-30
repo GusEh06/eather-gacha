@@ -57,5 +57,20 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
 
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: aether-stripe-cli
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_DEVICE_NAME=aether-docker
+    command: >
+      listen
+      --api-key ${STRIPE_SECRET_KEY}
+      --forward-to http://api:3001/vault/webhook
+      --events checkout.session.completed
+
 volumes:
   mongo_data:

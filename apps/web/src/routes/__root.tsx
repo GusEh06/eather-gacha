@@ -1,10 +1,12 @@
+import { useState, type FormEvent } from "react"
 import {
   HeadContent,
   Outlet,
   Scripts,
   createRootRoute,
+  useLocation,
 } from "@tanstack/react-router"
-import { ClerkProvider, SignIn } from "@clerk/tanstack-react-start"
+import { ClerkProvider, SignIn, useSignUp, useClerk } from "@clerk/tanstack-react-start"
 import { Show } from "@clerk/react"
 import { esES } from "@clerk/localizations"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -73,6 +75,8 @@ function RootLayout() {
     <ClerkProvider
       publishableKey={clerkKey}
       localization={esES}
+      signInUrl="/#/sign-in"
+      signUpUrl="/#/sign-up"
       appearance={{
         variables: {
           colorPrimary: "#00ffff",
@@ -282,16 +286,32 @@ function RootLayout() {
             </>
           }
         >
-          <MasterLayout>
-            <Outlet />
-          </MasterLayout>
+          <AdminOrGameLayout />
         </Show>
       </QueryClientProvider>
     </ClerkProvider>
   )
 }
 
+function AdminOrGameLayout() {
+  const location = useLocation()
+  const isAdmin = location.pathname.startsWith("/admin")
+
+  if (isAdmin) {
+    return <Outlet />
+  }
+
+  return (
+    <MasterLayout>
+      <Outlet />
+    </MasterLayout>
+  )
+}
+
 function AttractiveLoginPage() {
+  const location = useLocation()
+  const isSignUp = location.hash.includes("sign-up")
+
   return (
     <div className="login-shell">
       <LivingAtmosphere route="login" density={5} />
@@ -303,8 +323,252 @@ function AttractiveLoginPage() {
           Aether Gacha
         </h1>
         
-        <SignIn />
+        {isSignUp ? (
+          <CustomSignUpForm />
+        ) : (
+          <SignIn routing="hash" signUpUrl="/#/sign-up" forceRedirectUrl={location.pathname} />
+        )}
       </div>
+    </div>
+  )
+}
+
+/* ─── Custom Sign-Up form — replaces Clerk's prebuilt <SignUp> which
+       redirects to hosted pages. Uses useSignUp() hook directly. ─── */
+type SignUpStep = "credentials" | "verify-email"
+
+function CustomSignUpForm() {
+  const { signUp, isLoaded } = useSignUp()
+  const { setActive } = useClerk()
+
+  const [step, setStep] = useState<SignUpStep>("credentials")
+  const [username, setUsername] = useState("")
+  const [emailAddress, setEmailAddress] = useState("")
+  const [password, setPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
+  const [verificationCode, setVerificationCode] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  function getClerk() {
+    return typeof window !== "undefined"
+      ? (window as Record<string, unknown>).Clerk as Record<string, unknown> | undefined
+      : undefined
+  }
+
+  function resolveClerkError(err: unknown, fallback: string): string {
+    if (typeof err === "object" && err && "errors" in err) {
+      const e = (err as { errors?: Array<{ longMessage?: string; message?: string }> }).errors
+      return e?.[0]?.longMessage ?? e?.[0]?.message ?? fallback
+    }
+    return err instanceof Error ? err.message : fallback
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+    setSuccess(null)
+
+    const clerkClient = getClerk() as any
+    const activeSignUp = (isLoaded ? signUp : null) ?? clerkClient?.client?.signUp
+    const activeSetActive = setActive ?? ((args: any) => clerkClient?.setActive(args))
+
+    if (!activeSignUp) {
+      setError("El servicio de registro no está disponible. Intenta recargar la página.")
+      return
+    }
+
+    // ─── STEP 2: Verify email code ───
+    if (step === "verify-email") {
+      setLoading(true)
+      try {
+        const result = await activeSignUp.attemptVerification({
+          strategy: "email_code",
+          code: verificationCode,
+        })
+        if (result.status === "complete") {
+          await activeSetActive({ session: result.createdSessionId })
+        } else {
+          setError("Código inválido. Intenta de nuevo.")
+        }
+      } catch (rawError: any) {
+        console.error("CLERK VERIFY ERROR:", rawError)
+        setError(resolveClerkError(rawError, "La verificación falló."))
+      } finally {
+        setLoading(false)
+      }
+      return
+    }
+
+    // ─── STEP 1: Create account ───
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const created = await activeSignUp.create({
+        emailAddress: emailAddress.trim(),
+        password,
+        username: username.trim() || undefined,
+      })
+
+      if (!created || (created.status !== "missing_requirements" && created.status !== "complete")) {
+        throw new Error("Estado inesperado: " + created?.status)
+      }
+
+      if (created.status === "complete") {
+        await activeSetActive({ session: created.createdSessionId })
+        return
+      }
+
+      await created.prepareVerification({ strategy: "email_code" })
+      setStep("verify-email")
+      setSuccess("Código enviado a tu email.")
+    } catch (rawError: any) {
+      console.error("CLERK SIGNUP ERROR:", rawError)
+      setError(resolveClerkError(rawError, "El registro falló."))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function resendCode() {
+    const clerkClient = getClerk() as any
+    const activeSignUp = (isLoaded ? signUp : null) ?? clerkClient?.client?.signUp
+    if (!activeSignUp) return
+    try {
+      await activeSignUp.prepareVerification({ strategy: "email_code" })
+      setSuccess("Código reenviado.")
+    } catch {
+      setError("No se pudo reenviar el código.")
+    }
+  }
+
+  function switchToSignIn() {
+    window.location.hash = "#/sign-in"
+  }
+
+  return (
+    <div className="custom-signup-card">
+      <h2 className="custom-signup-title">
+        {step === "credentials" ? "Crear Cuenta" : "Verificar Email"}
+      </h2>
+      <p className="custom-signup-subtitle">
+        {step === "credentials"
+          ? "Forja tu identidad en el Aether"
+          : `Ingresa el código de 6 dígitos enviado a ${emailAddress}`}
+      </p>
+
+      <form className="custom-signup-form" onSubmit={handleSubmit}>
+        <div id="clerk-captcha" />
+
+        {step === "credentials" ? (
+          <>
+            <label className="custom-signup-label">
+              <span>Nombre de Usuario</span>
+              <input
+                className="custom-signup-input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                placeholder="binder_name"
+                required
+              />
+            </label>
+            <label className="custom-signup-label">
+              <span>Email</span>
+              <input
+                className="custom-signup-input"
+                type="email"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+                autoComplete="email"
+                required
+              />
+            </label>
+            <label className="custom-signup-label">
+              <span>Contraseña</span>
+              <input
+                className="custom-signup-input"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </label>
+            <label className="custom-signup-label">
+              <span>Confirmar Contraseña</span>
+              <input
+                className="custom-signup-input"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
+                required
+              />
+            </label>
+          </>
+        ) : (
+          <>
+            <label className="custom-signup-label">
+              <span>Código de Verificación</span>
+              <input
+                className="custom-signup-input"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="123456"
+                required
+              />
+            </label>
+            <div className="custom-signup-inline">
+              <button
+                type="button"
+                className="custom-signup-link"
+                onClick={() => {
+                  setStep("credentials")
+                  setVerificationCode("")
+                  setError(null)
+                  setSuccess(null)
+                }}
+              >
+                ← Editar datos
+              </button>
+              <button
+                type="button"
+                className="custom-signup-link"
+                onClick={resendCode}
+                disabled={loading}
+              >
+                Reenviar código
+              </button>
+            </div>
+          </>
+        )}
+
+        {error && <p className="custom-signup-error">{error}</p>}
+        {success && <p className="custom-signup-success">{success}</p>}
+
+        <button className="custom-signup-btn" type="submit" disabled={loading}>
+          {loading
+            ? "Invocando..."
+            : step === "verify-email"
+              ? "Verificar y Entrar"
+              : "Forjar Mi Binder"}
+        </button>
+      </form>
+
+      <p className="custom-signup-footer">
+        ¿Ya tienes cuenta?{" "}
+        <button type="button" className="custom-signup-link" onClick={switchToSignIn}>
+          Iniciar Sesión
+        </button>
+      </p>
     </div>
   )
 }

@@ -29,22 +29,27 @@ export function ListingCard({ listing, currentUserId, onBuy }: Props) {
       <div
         className="entity-idle"
         style={{
-          width: "80px",
-          height: "80px",
-          borderRadius: "50%",
+          width: "100%",
+          height: "140px",
           overflow: "hidden",
+          borderRadius: "6px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: "2.5rem",
-          color: config?.color,
           "--rarity-color": config?.color,
         } as React.CSSProperties}
       >
-        {entitySnapshot.imageUrl
-          ? <img src={entitySnapshot.imageUrl} alt={entitySnapshot.nombre} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          : (config?.icon ?? "◈")
-        }
+        <img
+          src={entitySnapshot.imageUrl}
+          alt={entitySnapshot.nombre}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "contain",
+            padding: "0.5rem",
+            filter: `drop-shadow(0 2px 8px ${config?.color}66)`,
+          }}
+        />
       </div>
 
       {/* Entity name */}

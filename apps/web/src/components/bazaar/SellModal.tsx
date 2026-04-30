@@ -55,12 +55,28 @@ export function SellModal({ item, onClose, onConfirm, isLoading, error }: Props)
           <div
             className="entity-idle"
             style={{
-              fontSize: "2.5rem",
-              color: config?.color,
+              width: "100px",
+              height: "100px",
+              overflow: "hidden",
+              borderRadius: "8px",
+              margin: "0 auto",
+              border: `2px solid var(${config.cssVar})`,
               "--rarity-color": config?.color,
             } as React.CSSProperties}
           >
-            {config?.icon ?? "◈"}
+            {entity?.imageUrl ? (
+              <img
+                src={entity.imageUrl}
+                alt={entity.nombre ?? "Entity"}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            ) : (
+              <span style={{ fontSize: "2.5rem", color: config?.color }}>{config?.icon ?? "◈"}</span>
+            )}
           </div>
           <p
             style={{

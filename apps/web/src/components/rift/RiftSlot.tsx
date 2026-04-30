@@ -40,16 +40,36 @@ export function RiftSlot({ slot, index, onBuy, isLoading }: Props) {
           height: "100%",
         }}
       >
-        {/* Entity icon */}
+        {/* Entity image */}
         <div
           className={slot.sold ? undefined : "entity-idle"}
           style={{
-            fontSize: "2.5rem",
-            color: slot.sold ? "var(--text-muted)" : config?.color,
+            width: "100%",
+            height: "130px",
+            overflow: "hidden",
+            borderRadius: "6px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             "--rarity-color": config?.color,
+            filter: slot.sold ? "grayscale(1) brightness(0.5)" : undefined,
           } as React.CSSProperties}
         >
-          {config?.icon ?? "◈"}
+          {slot.entity?.imageUrl ? (
+            <img
+              src={slot.entity.imageUrl}
+              alt={slot.entity.nombre ?? "Entity"}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                padding: "0.5rem",
+                filter: slot.sold ? undefined : `drop-shadow(0 2px 8px ${config?.color}66)`,
+              }}
+            />
+          ) : (
+            <span style={{ fontSize: "2.5rem", color: config?.color }}>{config?.icon ?? "◈"}</span>
+          )}
         </div>
 
         {/* Entity name */}
