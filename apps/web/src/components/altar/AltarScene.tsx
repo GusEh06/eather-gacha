@@ -11,84 +11,162 @@ export function AltarScene({ shards, onInvoke, isLoading }: AltarSceneProps) {
   const canX10 = !isLoading && shards >= 1600
 
   return (
-    <div style={{ textAlign: "center", padding: "2rem" }}>
+    <div style={{ textAlign: "center", padding: "1rem", zIndex: 10, marginTop: "-120px" }}>
       <h1
         style={{
           fontFamily: "var(--font-display)",
-          fontSize: "2.5rem",
-          color: "var(--accent-aether)",
-          letterSpacing: "0.12em",
+          fontSize: "4.5rem",
+          color: "#00ffff",
+          textShadow: "3px 3px 0 #ff3399",
+          letterSpacing: "0.05em",
           marginBottom: "0.5rem",
+          fontWeight: 900,
+          textTransform: "uppercase"
         }}
       >
-        The Altar
+        Ritual
       </h1>
-      <p
+      <div
         style={{
-          color: "var(--text-secondary)",
-          fontFamily: "var(--font-ui)",
-          marginBottom: "2.5rem",
+          display: "inline-block",
+          background: "#ccff00",
+          color: "#000",
+          padding: "5px 15px",
+          fontFamily: "var(--font-display)",
+          fontSize: "1.1rem",
+          fontWeight: 900,
+          border: "3px solid #000",
+          boxShadow: "4px 4px 0 #000",
+          marginBottom: "4rem",
+          textTransform: "uppercase"
         }}
       >
-        The ritual awaits. Summon entities from the void.
-      </p>
+        Elige tu Aliado
+      </div>
 
-      {/* Altar orb */}
-      <motion.div
-        animate={{
-          boxShadow: isLoading
-            ? [
-                "0 0 24px var(--accent-aether), 0 0 48px rgba(123,47,255,0.6)",
-                "0 0 40px var(--accent-aether), 0 0 80px rgba(123,47,255,0.8)",
-                "0 0 24px var(--accent-aether), 0 0 48px rgba(123,47,255,0.6)",
-              ]
-            : [
-                "0 0 8px var(--accent-aether), 0 0 16px rgba(123,47,255,0.3)",
-                "0 0 16px var(--accent-aether), 0 0 32px rgba(123,47,255,0.5)",
-                "0 0 8px var(--accent-aether), 0 0 16px rgba(123,47,255,0.3)",
-              ],
-        }}
-        transition={{ duration: isLoading ? 0.6 : 2, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          width: "200px",
-          height: "200px",
-          margin: "0 auto 2.5rem",
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(123,47,255,0.35) 0%, rgba(10,10,15,0) 70%)",
-          border: "1px solid var(--border-active)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "3.5rem",
-        }}
-      >
-        {isLoading ? (
-          <motion.span
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+      {/* Esfera de Poder (Brutalist Comic Style con Vortex) */}
+      <div style={{ position: "relative", width: "260px", height: "260px", margin: "0 auto 4rem" }}>
+        
+        {/* Rayos de energía Vortex (Cyan) */}
+        <motion.div
+          animate={{ rotate: 360, scale: isLoading ? [1, 1.2, 1] : 1 }}
+          transition={{ rotate: { duration: 12, repeat: Infinity, ease: "linear" }, scale: { duration: 0.5, repeat: Infinity } }}
+          style={{
+            position: "absolute", inset: -80,
+            background: "repeating-conic-gradient(from 0deg, #00ffff 0deg 8deg, transparent 8deg 40deg)",
+            clipPath: "polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)",
+            zIndex: 1,
+            opacity: isLoading ? 1 : 0.5
+          }}
+        />
+
+        {/* Rayos de energía Vortex (Magenta) */}
+        <motion.div
+          animate={{ rotate: -360, scale: isLoading ? [1, 1.3, 1] : 1 }}
+          transition={{ rotate: { duration: 8, repeat: Infinity, ease: "linear" }, scale: { duration: 0.4, repeat: Infinity } }}
+          style={{
+            position: "absolute", inset: -100,
+            background: "repeating-conic-gradient(from 15deg, #ff3399 0deg 5deg, transparent 5deg 60deg)",
+            clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+            zIndex: 1,
+            opacity: isLoading ? 0.8 : 0.3
+          }}
+        />
+
+        {/* Anillo exterior mecánico */}
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          style={{
+            position: "absolute", inset: -15, borderRadius: "50%",
+            border: "8px dashed #000",
+            boxShadow: "4px 4px 0 #000"
+          }}
+        />
+
+        {/* Orbe Central (Sólido y rudo) */}
+        <motion.div
+          animate={{
+            scale: isLoading ? [1, 1.1, 1] : [1, 1.05, 1],
+            boxShadow: isLoading 
+              ? ["12px 12px 0 #000", "16px 16px 0 #000", "12px 12px 0 #000"]
+              : ["12px 12px 0 #000", "12px 12px 0 #000", "12px 12px 0 #000"]
+          }}
+          transition={{ duration: isLoading ? 0.3 : 2, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            width: "100%",
+            height: "100%",
+            borderRadius: "50%",
+            background: "#ff3399",
+            border: "8px solid #000",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+            zIndex: 5,
+            overflow: "hidden"
+          }}
+        >
+          {/* Ojo interno o pupila (Cyan sólido) */}
+          <motion.div
+            animate={{ scale: [1, 1.1, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            style={{
+              position: "absolute",
+              width: "60%", height: "60%",
+              borderRadius: "50%",
+              background: "#00ffff",
+              border: "6px solid #000",
+            }}
+          />
+
+          {/* Runic Detail Ring */}
+          <motion.svg
+            animate={{ rotate: -360 }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            style={{ position: "absolute", width: "100%", height: "100%", zIndex: 6, pointerEvents: "none" }}
+            viewBox="0 0 260 260"
           >
-            ᛟ
-          </motion.span>
-        ) : (
-          "ᛟ"
-        )}
-      </motion.div>
+            <path id="rune-path" d="M 130, 130 m -85, 0 a 85,85 0 1,1 170,0 a 85,85 0 1,1 -170,0" fill="transparent" />
+            <text fill="#000" fontSize="16" fontWeight="900" style={{ fontFamily: "var(--font-display)" }}>
+              <textPath href="#rune-path" startOffset="0%">
+                ᚠ ᚢ ᚦ ᚬ ᚱ ᚴ ᚼ ᚾ ᛁ ᛅ ᛋ ᛏ ᛒ ᛘ ᛚ ᛦ ᚠ ᚢ ᚦ ᚬ ᚱ ᚴ ᚼ ᚾ ᛁ ᛅ ᛋ ᛏ ᛒ ᛘ ᛚ ᛦ ᚠ ᚢ ᚦ ᚬ ᚱ ᚴ ᚼ ᚾ ᛁ ᛅ ᛋ ᛏ ᛒ ᛘ ᛚ ᛦ
+              </textPath>
+            </text>
+          </motion.svg>
+          <span style={{ 
+            position: "relative", zIndex: 10, fontSize: "5.5rem", 
+            color: "#fff", textShadow: "4px 4px 0 #000",
+            WebkitTextStroke: "2px #000"
+          }}>
+            {isLoading ? (
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                style={{ display: "inline-block" }}
+              >
+                ᛟ
+              </motion.span>
+            ) : (
+              "ᛟ"
+            )}
+          </span>
+        </motion.div>
+      </div>
 
-      {/* Invoke buttons */}
+      {/* Botones de Invocación estilo Gacha Premium */}
       <div
         style={{
           display: "flex",
-          gap: "1rem",
+          gap: "2rem",
           justifyContent: "center",
           flexWrap: "wrap",
+          paddingTop: "1rem"
         }}
       >
         <button
-          className="btn-primary"
+          className="aether-cta"
           style={{
-            fontSize: "1rem",
-            padding: "0.75rem 2rem",
             opacity: canX1 ? 1 : 0.4,
             cursor: canX1 ? "pointer" : "not-allowed",
           }}
@@ -99,11 +177,8 @@ export function AltarScene({ shards, onInvoke, isLoading }: AltarSceneProps) {
         </button>
 
         <button
-          className="btn-primary"
+          className="aether-cta aether-cta--gold"
           style={{
-            fontSize: "1rem",
-            padding: "0.75rem 2rem",
-            background: canX10 ? "var(--accent-gold)" : undefined,
             opacity: canX10 ? 1 : 0.4,
             cursor: canX10 ? "pointer" : "not-allowed",
           }}
@@ -114,16 +189,25 @@ export function AltarScene({ shards, onInvoke, isLoading }: AltarSceneProps) {
         </button>
       </div>
 
-      <p
+      <div
         style={{
-          color: "var(--text-muted)",
-          fontFamily: "var(--font-ui)",
-          fontSize: "0.8rem",
-          marginTop: "1.5rem",
+          position: "fixed",
+          top: "100px",
+          right: "40px",
+          background: "#000",
+          color: "#fff",
+          padding: "10px 20px",
+          fontFamily: "var(--font-display)",
+          fontWeight: 900,
+          fontSize: "1.2rem",
+          letterSpacing: "0.1em",
+          border: "4px solid #ccff00",
+          boxShadow: "6px 6px 0 #000",
+          zIndex: 50
         }}
       >
-        Balance: ◈ {shards.toLocaleString()}
-      </p>
+        Saldo: ◈ {shards.toLocaleString()}
+      </div>
     </div>
   )
 }

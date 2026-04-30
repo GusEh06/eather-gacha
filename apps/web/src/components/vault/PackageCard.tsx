@@ -24,30 +24,38 @@ export function PackageCard({ pkg, onSelect }: Props) {
         alignItems: "center",
         textAlign: "center",
         border: isSingularity
-          ? "2px solid transparent"
-          : "1px solid var(--border-subtle)",
+          ? "6px solid #00ffff"
+          : "4px solid #000",
         background: isSingularity
-          ? "linear-gradient(var(--bg-elevated), var(--bg-elevated)) padding-box, linear-gradient(90deg,#ff0080,#ff8c00,#ffe100,#00ff88,#00cfff,#7b2fff,#ff0080) border-box"
-          : undefined,
+          ? "#110518"
+          : "#000",
+        boxShadow: isSingularity
+          ? "12px 12px 0 #00ffff"
+          : "8px 8px 0 #ff3399",
         position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Black hole animation — Singularity Core only */}
+      {/* Brutalist Singularity Indicator */}
       {isSingularity && (
         <div
-          className="black-hole"
           aria-hidden="true"
-          style={{ position: "relative", zIndex: 0 }}
+          style={{
+            position: "absolute",
+            top: 0, left: 0, right: 0, height: "8px",
+            background: "#00ffff"
+          }}
         />
       )}
 
       <h2
         style={{
           fontFamily: "var(--font-display)",
-          fontSize: "1.1rem",
-          color: isSingularity ? "var(--accent-aether)" : "var(--text-primary)",
-          letterSpacing: "0.06em",
+          fontSize: "1.2rem",
+          fontWeight: 900,
+          color: isSingularity ? "#00ffff" : "#fff",
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
           position: "relative",
           zIndex: 1,
         }}
@@ -57,10 +65,11 @@ export function PackageCard({ pkg, onSelect }: Props) {
 
       <p
         style={{
-          fontFamily: "var(--font-ui)",
-          fontSize: "1.4rem",
-          color: "var(--accent-gold)",
-          fontWeight: 700,
+          fontFamily: "var(--font-display)",
+          fontSize: "1.8rem",
+          fontWeight: 900,
+          color: "#ccff00",
+          textShadow: "2px 2px 0 #000",
           position: "relative",
           zIndex: 1,
         }}
@@ -71,24 +80,26 @@ export function PackageCard({ pkg, onSelect }: Props) {
       {pkg.bonus > 0 && (
         <p
           style={{
-            fontFamily: "var(--font-ui)",
-            fontSize: "0.85rem",
-            color: "var(--rarity-nebula)",
+            fontFamily: "var(--font-display)",
+            fontSize: "0.9rem",
+            fontWeight: 900,
+            color: "#ff3399",
+            textTransform: "uppercase",
             position: "relative",
             zIndex: 1,
           }}
         >
-          + {pkg.bonus.toLocaleString("en-US")} bonus
+          + {pkg.bonus.toLocaleString("en-US")} BONUS
         </p>
       )}
 
       <p
         style={{
-          fontFamily: "var(--font-ui)",
-          fontWeight: 600,
-          fontSize: "1rem",
-          color: "var(--text-secondary)",
-          marginTop: pkg.bonus > 0 ? 0 : "0.25rem",
+          fontFamily: "var(--font-display)",
+          fontWeight: 900,
+          fontSize: "1.2rem",
+          color: "#fff",
+          marginTop: pkg.bonus > 0 ? 0 : "0.5rem",
           position: "relative",
           zIndex: 1,
         }}

@@ -13,7 +13,9 @@ import { Route as VaultRouteImport } from './routes/vault'
 import { Route as RiftRouteImport } from './routes/rift'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as BazaarRouteImport } from './routes/bazaar'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 
 const VaultRoute = VaultRouteImport.update({
   id: '/vault',
@@ -35,18 +37,30 @@ const BazaarRoute = BazaarRouteImport.update({
   path: '/bazaar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -54,25 +68,44 @@ export interface FileRoutesByTo {
   '/collection': typeof CollectionRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/bazaar' | '/collection' | '/rift' | '/vault'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/bazaar'
+    | '/collection'
+    | '/rift'
+    | '/vault'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bazaar' | '/collection' | '/rift' | '/vault'
-  id: '__root__' | '/' | '/bazaar' | '/collection' | '/rift' | '/vault'
+  to: '/' | '/bazaar' | '/collection' | '/rift' | '/vault' | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/bazaar'
+    | '/collection'
+    | '/rift'
+    | '/vault'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
   BazaarRoute: typeof BazaarRoute
   CollectionRoute: typeof CollectionRoute
   RiftRoute: typeof RiftRoute
@@ -109,6 +142,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BazaarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -116,11 +156,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
   BazaarRoute: BazaarRoute,
   CollectionRoute: CollectionRoute,
   RiftRoute: RiftRoute,

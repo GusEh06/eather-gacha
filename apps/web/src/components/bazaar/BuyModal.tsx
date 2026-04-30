@@ -52,12 +52,24 @@ export function BuyModal({ listing, onClose, onConfirm, isLoading }: Props) {
           <div
             className="entity-idle"
             style={{
-              fontSize: "2.5rem",
-              color: config?.color,
+              width: "100px",
+              height: "100px",
+              overflow: "hidden",
+              borderRadius: "8px",
+              margin: "0 auto",
+              border: `2px solid var(${config.cssVar})`,
               "--rarity-color": config?.color,
             } as React.CSSProperties}
           >
-            {config?.icon ?? "◈"}
+            <img
+              src={entitySnapshot.imageUrl}
+              alt={entitySnapshot.nombre}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
           </div>
           <p
             style={{

@@ -31,30 +31,29 @@ function CollectionPage() {
   if (!isSignedIn) {
     return (
       <div className="page">
-        <h1
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "2rem",
-            color: "var(--accent-aether)",
-            letterSpacing: "0.1em",
-            marginBottom: "1.5rem",
-          }}
-        >
-          Collection
-        </h1>
+        <div>
+          <h1 className="brutalist-title">
+            Colección
+          </h1>
+          <div className="brutalist-subtitle">
+            Tus Entidades Vinculadas
+          </div>
+        </div>
         <div
           style={{
             textAlign: "center",
             padding: "4rem 2rem",
-            color: "var(--text-muted)",
-            fontFamily: "var(--font-ui)",
-            border: "1px dashed var(--border-subtle)",
-            borderRadius: "8px",
+            color: "#000",
+            background: "#ff3399",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            border: "6px solid #000",
+            boxShadow: "12px 12px 0 #000",
             maxWidth: "480px",
+            textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>◈</p>
-          <p>Sign in to see your collection.</p>
+          <p>Inicia Sesión para ver tu Colección</p>
         </div>
       </div>
     )
@@ -62,43 +61,39 @@ function CollectionPage() {
 
   return (
     <div className="page">
-      <h1
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "2rem",
-          color: "var(--accent-aether)",
-          letterSpacing: "0.1em",
-          marginBottom: "0.5rem",
-        }}
-      >
-        Collection
-      </h1>
-      <p style={{ color: "var(--text-secondary)", marginBottom: "2rem" }}>
-        Your bound entities, Aether Binder.
-      </p>
+      <div>
+        <h1 className="brutalist-title">
+          Colección
+        </h1>
+        <div className="brutalist-subtitle">
+          Tus Entidades Vinculadas
+        </div>
+      </div>
 
       {isLoading ? (
         <p style={{ color: "var(--text-muted)", fontFamily: "var(--font-ui)" }}>
-          Loading your collection…
+          Cargando tu colección…
         </p>
       ) : isError ? (
         <p style={{ color: "var(--accent-blood)", fontFamily: "var(--font-ui)" }}>
-          Failed to load collection.
+          Error al cargar la colección.
         </p>
       ) : !inventory || inventory.length === 0 ? (
         <div
           style={{
             textAlign: "center",
             padding: "4rem 2rem",
-            color: "var(--text-muted)",
-            fontFamily: "var(--font-ui)",
-            border: "1px dashed var(--border-subtle)",
-            borderRadius: "8px",
+            color: "#000",
+            background: "#00ffff",
+            fontFamily: "var(--font-display)",
+            fontWeight: 900,
+            border: "6px solid #000",
+            boxShadow: "12px 12px 0 #000",
             maxWidth: "480px",
+            textTransform: "uppercase"
           }}
         >
-          <p style={{ fontSize: "2rem", marginBottom: "1rem" }}>◈</p>
-          <p>No entities yet. Visit The Altar to begin your collection.</p>
+          <p>No se encontraron personajes</p>
         </div>
       ) : (
         <>
@@ -110,7 +105,7 @@ function CollectionPage() {
               marginBottom: "1.5rem",
             }}
           >
-            {inventory.length} {inventory.length === 1 ? "entity" : "entities"} bound
+            {inventory.length} {inventory.length === 1 ? "entidad vinculada" : "entidades vinculadas"}
           </p>
           <div
             style={{
@@ -137,12 +132,31 @@ function CollectionPage() {
                   <div
                     className="entity-idle"
                     style={{
-                      fontSize: "2.5rem",
-                      color: config?.color,
+                      width: "100%",
+                      height: "140px",
+                      overflow: "hidden",
+                      borderRadius: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                       "--rarity-color": config?.color,
                     } as React.CSSProperties}
                   >
-                    {config?.icon ?? "◈"}
+                    {item.entity?.imageUrl ? (
+                      <img
+                        src={item.entity.imageUrl}
+                        alt={item.entity.nombre ?? "Entity"}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "contain",
+                          padding: "0.5rem",
+                          filter: `drop-shadow(0 2px 8px ${config?.color}66)`,
+                        }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: "2.5rem", color: config?.color }}>{config?.icon ?? "◈"}</span>
+                    )}
                   </div>
                   <p
                     style={{
@@ -155,16 +169,7 @@ function CollectionPage() {
                     {item.entity?.nombre ?? "Unknown"}
                   </p>
                   <RarityBadge rareza={rarity} />
-                  <p
-                    style={{
-                      fontFamily: "var(--font-ui)",
-                      fontSize: "0.75rem",
-                      color: "var(--text-muted)",
-                      textTransform: "capitalize",
-                    }}
-                  >
-                    via {item.obtainedVia}
-                  </p>
+
                   {/* List on Bazaar — only for tradable rarities */}
                   {!NON_BAZAAR_RARITIES.includes(
                     item.entity?.rareza as (typeof NON_BAZAAR_RARITIES)[number]
@@ -177,7 +182,7 @@ function CollectionPage() {
                         setSellError(null)
                       }}
                     >
-                      List on Bazaar
+                      Listar en el Bazar
                     </button>
                   )}
                 </div>

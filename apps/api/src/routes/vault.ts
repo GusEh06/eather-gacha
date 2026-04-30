@@ -85,25 +85,38 @@ vaultRoutes.post("/webhook", async (c) => {
   const rawBody = await c.req.text()
   const sig = c.req.header("stripe-signature") ?? ""
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-  if (!webhookSecret) {
-    console.warn("[vault] STRIPE_WEBHOOK_SECRET not set — skipping signature verification")
-  }
+  const cliSecret = process.env.STRIPE_CLI_WEBHOOK_SECRET
 
   let event: Stripe.Event
   try {
     const stripe = getStripe()
-    if (webhookSecret) {
-      event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret)
+    // Try CLI secret first (local dev), then dashboard secret (prod)
+    // If neither is set, accept the raw event (dev-only fallback)
+    if (cliSecret || webhookSecret) {
+      let verified = false
+      for (const secret of [cliSecret, webhookSecret].filter(Boolean) as string[]) {
+        try {
+          event = await stripe.webhooks.constructEventAsync(rawBody, sig, secret)
+          verified = true
+          break
+        } catch {
+          // try next
+        }
+      }
+      if (!verified) {
+        console.error("[vault] Webhook signature verification failed with all known secrets")
+        return c.json({ error: "Invalid signature" }, 400)
+      }
     } else {
+      console.warn("[vault] No webhook secrets configured — skipping signature verification")
       event = JSON.parse(rawBody) as Stripe.Event
     }
   } catch (err) {
-    console.error("[vault] Webhook signature verification failed:", err)
-    return c.json({ error: "Invalid signature" }, 400)
+    console.error("[vault] Webhook error during event parsing:", err)
+    return c.json({ error: "Invalid webhook payload" }, 400)
   }
 
-  if (event.type === "checkout.session.completed") {
+  if (event!.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session
     const { clerkId, packageId } = session.metadata ?? {}
 
@@ -121,7 +134,21 @@ vaultRoutes.post("/webhook", async (c) => {
     try {
       const db = await getDb()
       const users = usersCol(db)
-      await users.updateOne({ clerkId }, { $inc: { shards: pkg.shards } })
+      await users.updateOne(
+        { clerkId },
+        {
+          $inc: { shards: pkg.shards },
+          $setOnInsert: {
+            username: `binder_${clerkId.slice(-6)}`,
+            title: "Aether Binder",
+            pityCounter: 0,
+            pityMythicCounter: 0,
+            inventory: [],
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true },
+      )
       console.log(`[vault] Credited ${pkg.shards} shards to ${clerkId} (${packageId})`)
     } catch (err) {
       console.error("[vault] Failed to credit shards:", err)

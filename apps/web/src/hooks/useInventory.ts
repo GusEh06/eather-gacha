@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { useAuth } from "@clerk/tanstack-react-start"
+import { getAuthToken } from "../lib/auth"
 
 export interface InventoryEntity {
   _id: string
@@ -28,7 +29,7 @@ export function useInventory() {
   return useQuery({
     queryKey: ["inventory"],
     queryFn: async (): Promise<InventoryItem[]> => {
-      const token = await getToken()
+      const token = await getAuthToken(getToken)
       const apiUrl = import.meta.env.VITE_API_URL ?? "http://localhost:3001"
       const res = await fetch(`${apiUrl}/user/inventory`, {
         headers: { Authorization: `Bearer ${token}` },

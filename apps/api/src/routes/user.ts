@@ -5,7 +5,11 @@ import { usersCol, userEntitiesCol, entitiesCol, ObjectId } from "../db/collecti
 
 const userRoutes = new Hono()
 
+const ONBOARDING_SHARDS = 320
+
 // GET /user/profile — returns shards, pity counters, inventory count
+// Auto-provisions the user in MongoDB on first authenticated request
+// so we don't depend on the Clerk webhook (which doesn't arrive in local dev).
 userRoutes.get("/profile", authMiddleware, async (c) => {
   const clerkId = c.get("userId") as string
 
@@ -13,7 +17,25 @@ userRoutes.get("/profile", authMiddleware, async (c) => {
     const db = await getDb()
     const users = usersCol(db)
 
-    const user = await users.findOne({ clerkId })
+    let user = await users.findOne({ clerkId })
+
+    // Auto-provision: create user if they exist in Clerk but not in MongoDB
+    if (!user) {
+      const newUser = {
+        clerkId,
+        username: `binder_${clerkId.slice(-6)}`,
+        title: "Aether Binder",
+        shards: ONBOARDING_SHARDS,
+        pityCounter: 0,
+        pityMythicCounter: 0,
+        inventory: [],
+        createdAt: new Date(),
+      }
+      await users.insertOne(newUser)
+      console.log(`[user] Auto-provisioned Aether Binder (${clerkId}) with ${ONBOARDING_SHARDS} Shards`)
+      user = await users.findOne({ clerkId })
+    }
+
     if (!user) {
       return c.json({ error: "User not found" }, 404)
     }
@@ -25,7 +47,7 @@ userRoutes.get("/profile", authMiddleware, async (c) => {
       shards: user.shards,
       pityCounter: user.pityCounter,
       pityMythicCounter: user.pityMythicCounter,
-      inventoryCount: user.inventory.length,
+      inventoryCount: (user.inventory ?? []).length,
       createdAt: user.createdAt,
     })
   } catch (err) {
