@@ -3,8 +3,8 @@ import { MongoClient, ObjectId } from "mongodb"
 const MONGODB_URI =
   process.env.MONGODB_URI ?? "mongodb://root:root@localhost:27017/aether?authSource=admin"
 
-const FIREBASE_BUCKET = process.env.FIREBASE_STORAGE_BUCKET || "desarrollo-ix-parcial-2.firebasestorage.app"
-const getImageUrl = (filename: string) => `https://firebasestorage.googleapis.com/v0/b/${FIREBASE_BUCKET}/o/entities%2F${filename}?alt=media`
+const WEB_URL = process.env.WEB_APP_URL ?? "http://localhost:3000"
+const getImageUrl = (filename: string) => `${WEB_URL}/assets/entities/${filename}`
 
 const entities = [
   // ── DUST (2) ──────────────────────────────────────────────────────────────

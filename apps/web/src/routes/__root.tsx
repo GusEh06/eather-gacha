@@ -6,7 +6,7 @@ import {
   createRootRoute,
   useLocation,
 } from "@tanstack/react-router"
-import { ClerkProvider, SignIn, useSignUp, useClerk } from "@clerk/tanstack-react-start"
+import { ClerkProvider, useSignIn, useSignUp, useClerk } from "@clerk/tanstack-react-start"
 import { Show } from "@clerk/react"
 import { esES } from "@clerk/localizations"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -194,23 +194,42 @@ function RootLayout() {
             display: "none",
           },
           userButtonPopoverCard: {
-            background: "#0a0a0f",
-            border: "4px solid #000",
-            boxShadow: "8px 8px 0 rgba(0,0,0,1)",
+            background: "#110518",
+            border: "4px solid #00ffff",
+            boxShadow: "8px 8px 0 #00ffff",
           },
           userButtonPopoverActionButtonText: {
             color: "#e8e8f0",
             fontFamily: "'Rajdhani', sans-serif",
             fontSize: "1.1rem",
-            fontWeight: "600",
+            fontWeight: "700",
           },
           userButtonPopoverActionButtonIcon: {
             color: "#00ffff",
           },
           userButtonPopoverActionButton: {
+            color: "#e8e8f0",
             "&:hover": {
-              background: "rgba(0, 255, 255, 0.1)",
+              background: "rgba(0, 255, 255, 0.15)",
             },
+          },
+          userPreview: {
+            background: "#1a0a2e",
+            borderBottom: "2px solid #00ffff33",
+          },
+          userPreviewMainIdentifier: {
+            color: "#00ffff",
+            fontFamily: "'Cinzel', serif",
+            fontWeight: "700",
+            fontSize: "1rem",
+          },
+          userPreviewSecondaryIdentifier: {
+            color: "#a0a0c0",
+            fontFamily: "'Rajdhani', sans-serif",
+            fontSize: "0.9rem",
+          },
+          userButtonPopoverFooter: {
+            display: "none",
           },
           profileSectionTitleText: {
             color: "#00ffff",
@@ -228,13 +247,43 @@ function RootLayout() {
           },
           navbar: {
             background: "#110518",
-            borderRight: "4px solid #000",
+            borderRight: "4px solid #00ffff33",
           },
           navbarButton: {
             color: "#e8e8f0",
           },
+          navbarButtonIcon: {
+            color: "#00ffff",
+          },
           pageScrollBox: {
             background: "#0a0a0f",
+          },
+          page: {
+            background: "#0a0a0f",
+          },
+          headerTitle: {
+            color: "#00ffff",
+            fontFamily: "'Cinzel', serif",
+            fontWeight: "900",
+          },
+          headerSubtitle: {
+            color: "#a0a0c0",
+            fontFamily: "'Rajdhani', sans-serif",
+          },
+          profileSectionItemProfileImage: {
+            borderColor: "#00ffff",
+          },
+          accordionTriggerButton: {
+            color: "#e8e8f0",
+          },
+          formFieldInputShowPasswordButton: {
+            color: "#00ffff",
+          },
+          tableHead: {
+            color: "#a0a0c0",
+          },
+          badge: {
+            color: "#e8e8f0",
           },
           modalContent: {
             background: "#0a0a0f",
@@ -322,13 +371,113 @@ function AttractiveLoginPage() {
         >
           Aether Gacha
         </h1>
-        
-        {isSignUp ? (
-          <CustomSignUpForm />
-        ) : (
-          <SignIn routing="hash" signUpUrl="/#/sign-up" forceRedirectUrl={location.pathname} />
-        )}
+
+        {isSignUp ? <CustomSignUpForm /> : <CustomSignInForm />}
       </div>
+    </div>
+  )
+}
+
+function CustomSignInForm() {
+  const { signIn, isLoaded } = useSignIn()
+  const { setActive } = useClerk()
+
+  const [identifier, setIdentifier] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function getClerk() {
+    return typeof window !== "undefined"
+      ? (window as Record<string, unknown>).Clerk as Record<string, unknown> | undefined
+      : undefined
+  }
+
+  function resolveClerkError(err: unknown, fallback: string): string {
+    if (typeof err === "object" && err && "errors" in err) {
+      const e = (err as { errors?: Array<{ longMessage?: string; message?: string }> }).errors
+      return e?.[0]?.longMessage ?? e?.[0]?.message ?? fallback
+    }
+    return err instanceof Error ? err.message : fallback
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setError(null)
+
+    const clerkClient = getClerk() as any
+    const activeSignIn = (isLoaded ? signIn : null) ?? clerkClient?.client?.signIn
+    const activeSetActive = setActive ?? ((args: any) => clerkClient?.setActive(args))
+
+    if (!activeSignIn) {
+      setError("El servicio de inicio de sesión no está disponible. Recargá la página.")
+      return
+    }
+
+    setLoading(true)
+    try {
+      const result = await activeSignIn.create({
+        identifier: identifier.trim(),
+        password,
+      })
+
+      if (result.status === "complete") {
+        await activeSetActive({ session: result.createdSessionId })
+      } else {
+        setError("Tu cuenta requiere verificación adicional.")
+      }
+    } catch (rawError: any) {
+      setError(resolveClerkError(rawError, "El inicio de sesión falló."))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function switchToSignUp() {
+    window.location.hash = "#/sign-up"
+  }
+
+  return (
+    <div className="custom-signup-card">
+      <h2 className="custom-signup-title">Iniciar Sesión</h2>
+      <p className="custom-signup-subtitle">Vinculá tu alma al Aether</p>
+
+      <form className="custom-signup-form" onSubmit={handleSubmit}>
+        <label className="custom-signup-label">
+          <span>Email o Usuario</span>
+          <input
+            className="custom-signup-input"
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+            autoComplete="username"
+            required
+          />
+        </label>
+        <label className="custom-signup-label">
+          <span>Contraseña</span>
+          <input
+            className="custom-signup-input"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
+        </label>
+
+        {error && <p className="custom-signup-error">{error}</p>}
+
+        <button className="custom-signup-btn" type="submit" disabled={loading}>
+          {loading ? "Invocando..." : "Entrar al Altar"}
+        </button>
+      </form>
+
+      <p className="custom-signup-footer">
+        ¿No tenés cuenta?{" "}
+        <button type="button" className="custom-signup-link" onClick={switchToSignUp}>
+          Crear Cuenta
+        </button>
+      </p>
     </div>
   )
 }

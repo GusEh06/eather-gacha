@@ -1829,3 +1829,54 @@ a:hover {
   font-size: 0.95rem;
   margin: 0.5rem 0 0;
 }
+
+/* ── Clerk — fix avatar square background ── */
+.cl-avatarBox,
+.cl-userPreviewAvatarBox {
+  background: #110518 !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+}
+
+.cl-userPreviewAvatarContainer {
+  background: #110518 !important;
+  overflow: hidden !important;
+}
+
+.cl-internal-1y7k3pi {
+  background: #110518 !important;
+  border-color: #110518 !important;
+}
+
+.cl-avatarImage,
+.cl-userPreviewAvatarImage {
+  border-radius: 50% !important;
+  object-fit: cover !important;
+}
+
+/* ── Clerk — hide dev watermark ── */
+.cl-internal-b3fm6y,
+[data-localization-key="signIn.start.subtitle"],
+a[href*="clerk.com"],
+.cl-branded {
+  display: none !important;
+}
+
+/* ── Clerk UserProfile modal — force light text on dark background ── */
+[data-color="inherit"],
+[data-color="secondary"],
+[data-localization-key] {
+  color: #e8e8f0!important;
+}
+
+[data-localization-key="userProfile.navbar.title"] {
+  color: #00ffff !important;
+  font-family: 'Cinzel', serif !important;
+  font-weight: 900 !important;
+}
+
+[data-localization-key="userProfile.navbar.description"] {
+  color: #a0a0c0 !important;
+}
