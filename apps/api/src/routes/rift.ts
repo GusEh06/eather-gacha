@@ -3,6 +3,8 @@ import { authMiddleware } from "../middleware/auth"
 import { getDb } from "../db/client"
 import { usersCol, userEntitiesCol, entitiesCol, riftRotationCol } from "../db/collections"
 import { getCurrentRiftRotation } from "../services/rift"
+import { logAudit } from "../services/audit"
+import { recordShardTransaction } from "../services/transactions"
 
 const riftRoutes = new Hono()
 
@@ -114,6 +116,22 @@ riftRoutes.post("/buy", authMiddleware, async (c) => {
       { clerkId },
       { $push: { inventory: inserted.insertedId } }
     )
+
+    // P-40 + P-04: historial y auditoría
+    const boughtEntity = await entitiesCol(db).findOne({ _id: slot.entityId })
+    await recordShardTransaction(db, {
+      userId: clerkId,
+      type: "compra_rift",
+      amount: -slot.priceShards,
+      balanceAfter: buyer.shards,
+      description: `Compra en Rift: ${boughtEntity?.nombre ?? "entidad"} (${slot.priceShards} Sh)`,
+    })
+    await logAudit(db, c, {
+      userId: clerkId,
+      action: "rift.buy",
+      result: "success",
+      details: { slotIndex, entity: boughtEntity?.nombre, priceShards: slot.priceShards },
+    })
 
     return c.json({
       message: "Purchase successful",

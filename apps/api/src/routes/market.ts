@@ -8,10 +8,14 @@ import {
   marketListingsCol,
   ObjectId,
 } from "../db/collections"
+import { logAudit } from "../services/audit"
+import { createNotification } from "../services/notifications"
+import { recordShardTransaction } from "../services/transactions"
 
 const marketRoutes = new Hono()
 
 const NON_BAZAAR = ["dust", "nebula"]
+const DEFAULT_LISTING_LIMIT = 20 // P-39
 
 // ── GET /market/list ──────────────────────────────────────────────────────────
 // Public — no auth required
@@ -28,7 +32,7 @@ marketRoutes.get("/list", async (c) => {
       filter["entitySnapshot.rareza"] = rarityFilter
     }
 
-    const sortOrder =
+    const sortOrder: import("mongodb").Sort =
       sort === "price_asc"
         ? { priceShards: 1 as const }
         : sort === "price_desc"
@@ -78,6 +82,23 @@ marketRoutes.post("/sell", authMiddleware, async (c) => {
   try {
     const db = await getDb()
 
+    // P-39: límite de listings activos por usuario (se verifica antes que la propiedad)
+    const sellerDoc = await usersCol(db).findOne(
+      { clerkId },
+      { projection: { listingLimit: 1 } }
+    )
+    const limit = sellerDoc?.listingLimit ?? DEFAULT_LISTING_LIMIT
+    const activeCount = await marketListingsCol(db).countDocuments({
+      sellerId: clerkId,
+      status: "active",
+    })
+    if (activeCount >= limit) {
+      return c.json(
+        { error: `Active listing limit reached (${limit}). Cancel a listing before creating a new one.` },
+        400
+      )
+    }
+
     // Validate ownership of the UserEntity
     const userEntity = await userEntitiesCol(db).findOne({
       _id: new ObjectId(userEntityId),
@@ -120,9 +141,58 @@ marketRoutes.post("/sell", authMiddleware, async (c) => {
       createdAt: new Date(),
     })
 
+    await logAudit(db, c, {
+      userId: clerkId,
+      action: "market.listing.create",
+      result: "success",
+      details: { listingId: inserted.insertedId.toString(), entity: entityDoc.nombre, priceShards },
+    })
+
     return c.json({ listingId: inserted.insertedId.toString(), message: "Listed successfully" })
   } catch (err) {
     console.error("[market] sell error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
+})
+
+// ── POST /market/cancel ───────────────────────────────────────────────────────
+// P-33: cancelar un listing propio; la entidad vuelve a estar disponible.
+marketRoutes.post("/cancel", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+
+  let body: { listingId?: string }
+  try {
+    body = await c.req.json()
+  } catch {
+    return c.json({ error: "Invalid JSON body" }, 400)
+  }
+
+  const { listingId } = body
+  if (!listingId) return c.json({ error: "listingId is required" }, 400)
+
+  try {
+    const db = await getDb()
+
+    // Atómico: solo cancela si el listing es del usuario y sigue activo
+    const cancelled = await marketListingsCol(db).findOneAndUpdate(
+      { _id: new ObjectId(listingId), sellerId: clerkId, status: "active" },
+      { $set: { status: "cancelled", cancelledAt: new Date(), cancelledBy: clerkId } },
+      { returnDocument: "after" }
+    )
+    if (!cancelled) {
+      return c.json({ error: "Listing not found, not yours, or no longer active" }, 404)
+    }
+
+    await logAudit(db, c, {
+      userId: clerkId,
+      action: "market.listing.cancel",
+      result: "success",
+      details: { listingId },
+    })
+
+    return c.json({ success: true, status: "cancelled" })
+  } catch (err) {
+    console.error("[market] cancel error:", err)
     return c.json({ error: "Internal error" }, 500)
   }
 })
@@ -198,10 +268,49 @@ marketRoutes.post("/buy", authMiddleware, async (c) => {
     )
 
     const updatedBuyer = await users.findOne({ clerkId: buyerClerkId })
+    const buyerBalance = updatedBuyer?.shards ?? buyer.shards - listing.priceShards
+
+    // P-40: registrar movimientos de ambas partes
+    await recordShardTransaction(db, {
+      userId: buyerClerkId,
+      type: "compra_bazaar",
+      amount: -listing.priceShards,
+      balanceAfter: buyerBalance,
+      description: `Compra en Bazaar: ${listing.entitySnapshot?.nombre} (${listing.priceShards} Sh)`,
+    })
+    const sellerDoc = await users.findOne({ clerkId: listing.sellerId })
+    await recordShardTransaction(db, {
+      userId: listing.sellerId,
+      type: "venta_bazaar",
+      amount: sellerReceives,
+      balanceAfter: sellerDoc?.shards ?? 0,
+      description: `Venta en Bazaar: ${listing.entitySnapshot?.nombre} (recibido ${sellerReceives} Sh, tributo 5%)`,
+    })
+
+    // P-38: notificar al vendedor de la venta
+    await createNotification(db, {
+      userId: listing.sellerId,
+      type: "bazaar_sale",
+      title: "¡Tu entidad se vendió!",
+      message: `"${listing.entitySnapshot?.nombre}" se vendió por ${listing.priceShards} Shards. Recibiste ${sellerReceives} Shards (tributo del 5% aplicado).`,
+    })
+
+    await logAudit(db, c, {
+      userId: buyerClerkId,
+      action: "market.listing.buy",
+      result: "success",
+      details: {
+        listingId,
+        sellerId: listing.sellerId,
+        entity: listing.entitySnapshot?.nombre,
+        priceShards: listing.priceShards,
+        sellerReceived: sellerReceives,
+      },
+    })
 
     return c.json({
       message: "Purchase successful",
-      newShards: updatedBuyer?.shards ?? buyer.shards - listing.priceShards,
+      newShards: buyerBalance,
     })
   } catch (err) {
     console.error("[market] buy error:", err)

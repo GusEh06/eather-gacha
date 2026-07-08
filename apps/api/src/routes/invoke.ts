@@ -1,15 +1,21 @@
 import { Hono } from "hono"
 import { authMiddleware } from "../middleware/auth"
+import { rateLimit } from "../middleware/rateLimit"
 import { getDb } from "../db/client"
 import { usersCol, userEntitiesCol, ObjectId } from "../db/collections"
 import { calcularRareza, actualizarPity, seleccionarEntidad } from "../services/gacha"
+import { logAudit } from "../services/audit"
+import { recordShardTransaction } from "../services/transactions"
 
 const invokeRoutes = new Hono()
 
 const INVOKE_COST_X1 = 160
 const INVOKE_COST_X10 = 1600
 
-invokeRoutes.post("/", authMiddleware, async (c) => {
+// P-01: máximo 10 invocaciones por minuto por usuario
+const invokeRateLimit = rateLimit({ name: "invoke", max: 10, windowMs: 60_000 })
+
+invokeRoutes.post("/", authMiddleware, invokeRateLimit, async (c) => {
   const clerkId = c.get("userId") as string
 
   let body: { mode?: string }
@@ -107,6 +113,25 @@ invokeRoutes.post("/", authMiddleware, async (c) => {
     )
 
     const updatedUser = await users.findOne({ clerkId })
+
+    // P-40 + P-04: historial y auditoría de la invocación
+    await recordShardTransaction(db, {
+      userId: clerkId,
+      type: "invocacion",
+      amount: -cost,
+      balanceAfter: updatedUser?.shards ?? user.shards,
+      description: `Invocación ${mode}: ${results.map((r) => r.entity.nombre).join(", ")}`,
+    })
+    await logAudit(db, c, {
+      userId: clerkId,
+      action: "gacha.invoke",
+      result: "success",
+      details: {
+        mode,
+        cost,
+        obtained: results.map((r) => ({ nombre: r.entity.nombre, rareza: r.entity.rareza })),
+      },
+    })
 
     return c.json({
       results,

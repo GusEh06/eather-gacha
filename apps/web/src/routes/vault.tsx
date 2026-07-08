@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useState } from "react"
-import { useCheckout } from "../hooks/useVault"
+import { useState, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useCheckout, useVerifyPurchase } from "../hooks/useVault"
 import { PackageCard } from "../components/vault/PackageCard"
 import { ConfirmModal } from "../components/vault/ConfirmModal"
 import { CtaSlot } from "../components/ui/CtaSlot"
 import type { VaultPackage } from "../components/vault/PackageCard"
+import { USER_PROFILE_KEY } from "../hooks/useUserProfile"
 
 export const Route = createFileRoute("/vault")({ component: VaultPage })
 
@@ -18,6 +20,8 @@ const PACKAGES: VaultPackage[] = [
 function VaultPage() {
   const [selectedPkg, setSelectedPkg] = useState<VaultPackage | null>(null)
   const checkout = useCheckout()
+  const verifyPurchase = useVerifyPurchase()
+  const queryClient = useQueryClient()
 
   // Detect Stripe return query params (success / cancelled)
   const params = new URLSearchParams(
@@ -25,6 +29,26 @@ function VaultPage() {
   )
   const isSuccess = params.get("success") === "true"
   const isCancelled = params.get("cancelled") === "true"
+  const sessionId = params.get("session_id") ?? ""
+
+  // Al regresar de Stripe con success=true:
+  // Llama al backend para verificar el pago y acreditar shards directamente
+  // (no depende del webhook, funciona en localhost y produccion)
+  useEffect(() => {
+    if (!isSuccess || !sessionId) return
+
+    verifyPurchase.mutate(sessionId, {
+      onSuccess: (data) => {
+        // Actualizar el cache del perfil con el nuevo balance de shards
+        queryClient.setQueryData(USER_PROFILE_KEY, (old: { shards: number } | undefined) =>
+          old ? { ...old, shards: data.shards } : old
+        )
+        // Tambien invalidar para sincronizar con el servidor
+        queryClient.invalidateQueries({ queryKey: USER_PROFILE_KEY })
+      },
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSuccess, sessionId])
 
   function handleConfirm() {
     if (!selectedPkg) return

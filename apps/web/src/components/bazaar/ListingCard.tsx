@@ -6,9 +6,10 @@ interface Props {
   listing: MarketListing
   currentUserId?: string | null
   onBuy: (listing: MarketListing) => void
+  onCancel?: (listing: MarketListing) => void
 }
 
-export function ListingCard({ listing, currentUserId, onBuy }: Props) {
+export function ListingCard({ listing, currentUserId, onBuy, onCancel }: Props) {
   const { entitySnapshot, priceShards, sellerUsername, sellerId } = listing
   const rarity = entitySnapshot.rareza as keyof typeof RARITY_CONFIG
   const config = RARITY_CONFIG[rarity]
@@ -92,16 +93,27 @@ export function ListingCard({ listing, currentUserId, onBuy }: Props) {
         ◈ {priceShards.toLocaleString("en-US")}
       </p>
 
-      {/* Buy button */}
-      <button
-        className="btn-primary"
-        style={{ width: "100%", opacity: isOwn ? 0.4 : 1 }}
-        disabled={isOwn}
-        onClick={() => !isOwn && onBuy(listing)}
-        title={isOwn ? "This is your listing" : undefined}
-      >
-        {isOwn ? "Your Listing" : "Buy"}
-      </button>
+      {/* Buy / Cancel button */}
+      {isOwn && onCancel ? (
+        <button
+          className="btn-secondary"
+          style={{ width: "100%" }}
+          onClick={() => onCancel(listing)}
+          title="Retirar tu listing del Bazaar"
+        >
+          Retirar Listing
+        </button>
+      ) : (
+        <button
+          className="btn-primary"
+          style={{ width: "100%", opacity: isOwn ? 0.4 : 1 }}
+          disabled={isOwn}
+          onClick={() => !isOwn && onBuy(listing)}
+          title={isOwn ? "This is your listing" : undefined}
+        >
+          {isOwn ? "Your Listing" : "Buy"}
+        </button>
+      )}
     </div>
   )
 }

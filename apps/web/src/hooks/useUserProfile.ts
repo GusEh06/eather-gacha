@@ -7,6 +7,7 @@ export interface UserProfile {
   username: string
   pityCounter: number
   pityMythicCounter: number
+  inventoryCount: number
 }
 
 export const USER_PROFILE_KEY = ["user-profile"] as const
@@ -30,7 +31,7 @@ export function useUserProfile() {
       return res.json() as Promise<UserProfile>
     },
     enabled: !!isSignedIn,
-    staleTime: 30_000,
+    staleTime: 5_000,
   })
 }
 

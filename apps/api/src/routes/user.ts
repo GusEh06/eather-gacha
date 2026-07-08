@@ -1,7 +1,14 @@
 import { Hono } from "hono"
 import { authMiddleware } from "../middleware/auth"
 import { getDb } from "../db/client"
-import { usersCol, userEntitiesCol, entitiesCol, ObjectId } from "../db/collections"
+import {
+  usersCol,
+  userEntitiesCol,
+  entitiesCol,
+  shardTransactionsCol,
+  notificationsCol,
+  ObjectId,
+} from "../db/collections"
 
 const userRoutes = new Hono()
 
@@ -87,6 +94,105 @@ userRoutes.get("/inventory", authMiddleware, async (c) => {
     return c.json({ inventory })
   } catch (err) {
     console.error("[user] inventory error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
+})
+
+// ── P-40: GET /user/transactions?limit=&offset= — historial de Shards ─────────
+userRoutes.get("/transactions", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+  const limit = Math.min(Number(c.req.query("limit") ?? 50) || 50, 200)
+  const offset = Math.max(Number(c.req.query("offset") ?? 0) || 0, 0)
+
+  try {
+    const db = await getDb()
+    const [transactions, total] = await Promise.all([
+      shardTransactionsCol(db)
+        .find({ userId: clerkId })
+        .sort({ createdAt: -1 })
+        .skip(offset)
+        .limit(limit)
+        .toArray(),
+      shardTransactionsCol(db).countDocuments({ userId: clerkId }),
+    ])
+
+    return c.json({
+      total,
+      transactions: transactions.map((t) => ({
+        _id: t._id!.toString(),
+        type: t.type,
+        amount: t.amount,
+        balanceAfter: t.balanceAfter,
+        description: t.description,
+        createdAt: t.createdAt,
+      })),
+    })
+  } catch (err) {
+    console.error("[user] transactions error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
+})
+
+// ── P-38: notificaciones in-app ───────────────────────────────────────────────
+userRoutes.get("/notifications", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+
+  try {
+    const db = await getDb()
+    const notifications = await notificationsCol(db)
+      .find({ userId: clerkId })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .toArray()
+
+    return c.json({
+      unreadCount: notifications.filter((n) => !n.read).length,
+      notifications: notifications.map((n) => ({
+        _id: n._id!.toString(),
+        type: n.type,
+        title: n.title,
+        message: n.message,
+        read: n.read,
+        createdAt: n.createdAt,
+      })),
+    })
+  } catch (err) {
+    console.error("[user] notifications error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
+})
+
+// PATCH /user/notifications/:id/read — marcar una notificación como leída
+userRoutes.patch("/notifications/:id/read", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+  const id = c.req.param("id")
+
+  try {
+    const db = await getDb()
+    await notificationsCol(db).updateOne(
+      { _id: new ObjectId(id), userId: clerkId },
+      { $set: { read: true } }
+    )
+    return c.json({ success: true })
+  } catch (err) {
+    console.error("[user] mark notification read error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
+})
+
+// PATCH /user/notifications/read-all — marcar todas como leídas
+userRoutes.patch("/notifications/read-all", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+
+  try {
+    const db = await getDb()
+    await notificationsCol(db).updateMany(
+      { userId: clerkId, read: false },
+      { $set: { read: true } }
+    )
+    return c.json({ success: true })
+  } catch (err) {
+    console.error("[user] mark all read error:", err)
     return c.json({ error: "Internal error" }, 500)
   }
 })

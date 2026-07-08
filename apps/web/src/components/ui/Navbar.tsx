@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { ShardsDisplay } from "./ShardsDisplay"
 import { useUserProfile } from "../../hooks/useUserProfile"
 import { AuthPanel } from "./AuthPanel"
+import { NotificationBell } from "./NotificationBell"
 
 const NAV_LINKS = [
   { to: "/",           label: "The Altar" },
@@ -11,6 +12,7 @@ const NAV_LINKS = [
   { to: "/rift",       label: "The Rift" },
   { to: "/vault",      label: "Vault" },
   { to: "/collection", label: "Collection" },
+  { to: "/profile",    label: "Profile" },
 ] as const
 
 export function Navbar() {
@@ -86,6 +88,7 @@ export function Navbar() {
         {isSignedIn ? (
           <>
             <ShardsDisplay amount={profile?.shards ?? 0} />
+            <NotificationBell />
             <button
               className="btn-secondary"
               style={{ fontSize: "0.82rem", padding: "0.35rem 0.7rem" }}

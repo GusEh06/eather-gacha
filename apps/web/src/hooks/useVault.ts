@@ -34,3 +34,28 @@ export function useCheckout() {
     },
   })
 }
+
+// GET /vault/verify-purchase?sessionId=... → verifies payment and credits shards
+// Llamado al regresar de Stripe con ?success=true&session_id=...
+export function useVerifyPurchase() {
+  const { getToken } = useAuth()
+
+  return useMutation({
+    mutationFn: async (sessionId: string) => {
+      const token = await getAuthToken(getToken)
+      const res = await fetch(
+        `${getApiUrl()}/vault/verify-purchase?sessionId=${encodeURIComponent(sessionId)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      )
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({ error: "Unknown error" }))) as {
+          error?: string
+        }
+        throw new Error(err.error ?? "Failed to verify purchase")
+      }
+      return res.json() as Promise<{ shards: number; alreadyProcessed: boolean }>
+    },
+  })
+}
