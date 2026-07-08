@@ -5,6 +5,7 @@ import {
   useMarketListings,
   useMarketSell,
   useMarketBuy,
+  useMarketCancel,
   type MarketListing,
 } from "../hooks/useMarket"
 import { useInventory, type InventoryItem } from "../hooks/useInventory"
@@ -33,6 +34,16 @@ function BazaarPage() {
   const { data: inventory } = useInventory()
   const sellMutation = useMarketSell()
   const buyMutation = useMarketBuy()
+  const cancelMutation = useMarketCancel()
+
+  function handleCancelListing(listing: MarketListing) {
+    if (!confirm(`¿Retirar "${listing.entitySnapshot.nombre}" del Bazaar?`)) return
+    setErrorMsg(null)
+    cancelMutation.mutate(
+      { listingId: listing._id },
+      { onError: (e) => setErrorMsg(e.message) }
+    )
+  }
 
   // Auto-open SellModal when navigated from EntityReveal with ?sell=<userEntityId>
   useEffect(() => {
@@ -196,6 +207,7 @@ function BazaarPage() {
               listing={listing}
               currentUserId={userId ?? null}
               onBuy={setBuyTarget}
+              onCancel={handleCancelListing}
             />
           ))}
         </div>

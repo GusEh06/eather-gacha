@@ -1,6 +1,6 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router"
+import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tanstack/react-router"
 import { useUser } from "@clerk/tanstack-react-start"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 export const Route = createFileRoute("/admin")({
   component: AdminLayout,
@@ -13,6 +13,59 @@ const sidebarItemVariants = {
     x: 0,
     transition: { delay: 0.15 + i * 0.08, type: "spring", stiffness: 300, damping: 24 },
   }),
+}
+
+const ADMIN_NAV = [
+  { to: "/admin", label: "Dashboard", exact: true },
+  { to: "/admin/entities", label: "Entities", exact: false },
+  { to: "/admin/users", label: "Users", exact: false },
+  { to: "/admin/bazaar", label: "Bazaar", exact: false },
+  { to: "/admin/logs", label: "Audit Log", exact: false },
+] as const
+
+function AdminNav() {
+  const location = useLocation()
+
+  return (
+    <nav style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+      {ADMIN_NAV.map((item, i) => {
+        const isActive = item.exact
+          ? location.pathname === item.to || location.pathname === `${item.to}/`
+          : location.pathname.startsWith(item.to)
+        return (
+          <motion.div
+            key={item.to}
+            custom={i}
+            initial="hidden"
+            animate="visible"
+            variants={sidebarItemVariants}
+            whileHover={{ scale: 1.03, x: 4 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            <Link
+              to={item.to}
+              style={{
+                display: "block",
+                padding: "0.75rem 1rem",
+                border: "1px solid #111",
+                background: isActive ? "#111" : "#fff",
+                color: isActive ? "#fff" : "#111",
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: "0.9rem",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                boxShadow: isActive ? "2px 2px 0 #666" : "2px 2px 0 #ddd",
+                transition: "background 0.15s, color 0.15s",
+              }}
+            >
+              {item.label}
+            </Link>
+          </motion.div>
+        )
+      })}
+    </nav>
+  )
 }
 
 function AdminLayout() {
@@ -147,66 +200,7 @@ function AdminLayout() {
           </p>
         </motion.div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          <motion.a
-            href="/admin"
-            custom={0}
-            initial="hidden"
-            animate="visible"
-            variants={sidebarItemVariants}
-            whileHover={{ scale: 1.03, x: 4, boxShadow: "4px 4px 0 #111" }}
-            whileTap={{ scale: 0.97 }}
-            style={{
-              padding: "0.75rem 1rem",
-              border: "1px solid #111",
-              background: "#111",
-              color: "#fff",
-              textDecoration: "none",
-              fontWeight: 600,
-              fontSize: "0.9rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              boxShadow: "2px 2px 0 #666",
-              transition: "box-shadow 0.15s",
-            }}
-          >
-            Entities
-          </motion.a>
-          <motion.div
-            custom={1}
-            initial="hidden"
-            animate="visible"
-            variants={sidebarItemVariants}
-            style={{
-              padding: "0.75rem 1rem",
-              border: "1px dashed #ccc",
-              color: "#999",
-              fontSize: "0.9rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              cursor: "not-allowed",
-            }}
-          >
-            Users (Soon)
-          </motion.div>
-          <motion.div
-            custom={2}
-            initial="hidden"
-            animate="visible"
-            variants={sidebarItemVariants}
-            style={{
-              padding: "0.75rem 1rem",
-              border: "1px dashed #ccc",
-              color: "#999",
-              fontSize: "0.9rem",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              cursor: "not-allowed",
-            }}
-          >
-            Bazaar (Soon)
-          </motion.div>
-        </nav>
+        <AdminNav />
 
         <motion.div
           initial={{ opacity: 0 }}

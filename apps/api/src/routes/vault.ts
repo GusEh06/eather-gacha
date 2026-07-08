@@ -3,6 +3,9 @@ import Stripe from "stripe"
 import { getDb } from "../db/client"
 import { usersCol } from "../db/collections"
 import { authMiddleware } from "../middleware/auth"
+import { rateLimit } from "../middleware/rateLimit"
+import { logAudit } from "../services/audit"
+import { recordShardTransaction } from "../services/transactions"
 
 // Lazy Stripe init — avoids throwing at import if env var not configured
 let _stripe: Stripe | null = null
@@ -25,8 +28,11 @@ const PACKAGES: Record<string, { name: string; shards: number; priceCents: numbe
 
 const vaultRoutes = new Hono()
 
+// P-01: máximo 5 checkouts por minuto por usuario
+const checkoutRateLimit = rateLimit({ name: "checkout", max: 5, windowMs: 60_000 })
+
 // POST /vault/create-checkout — authenticated; creates Stripe hosted checkout session
-vaultRoutes.post("/create-checkout", authMiddleware, async (c) => {
+vaultRoutes.post("/create-checkout", authMiddleware, checkoutRateLimit, async (c) => {
   const clerkId = c.get("userId") as string
 
   let body: { packageId?: string } | null = null
@@ -69,7 +75,7 @@ vaultRoutes.post("/create-checkout", authMiddleware, async (c) => {
         clerkId,
         packageId: body.packageId,
       },
-      success_url: `${appUrl}/vault?success=true`,
+      success_url: `${appUrl}/vault?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/vault?cancelled=true`,
     })
 
@@ -134,6 +140,20 @@ vaultRoutes.post("/webhook", async (c) => {
     try {
       const db = await getDb()
       const users = usersCol(db)
+
+      // Idempotencia compartida con /verify-purchase: si la sesión ya fue
+      // procesada por cualquiera de los dos caminos, no acreditar de nuevo.
+      const processed = db.collection<{ sessionId: string; clerkId: string; processedAt: Date }>(
+        "processed_checkouts"
+      )
+      await processed.createIndex({ sessionId: 1 }, { unique: true })
+      try {
+        await processed.insertOne({ sessionId: session.id, clerkId, processedAt: new Date() })
+      } catch {
+        console.log(`[vault] webhook: session ${session.id} already credited — skipping`)
+        return c.json({ received: true })
+      }
+
       await users.updateOne(
         { clerkId },
         {
@@ -149,6 +169,20 @@ vaultRoutes.post("/webhook", async (c) => {
         },
         { upsert: true },
       )
+      const credited = await users.findOne({ clerkId })
+      await recordShardTransaction(db, {
+        userId: clerkId,
+        type: "recarga",
+        amount: pkg.shards,
+        balanceAfter: credited?.shards ?? pkg.shards,
+        description: `Recarga vía Stripe: ${pkg.name} (+${pkg.shards} Sh)`,
+      })
+      await logAudit(db, null, {
+        userId: clerkId,
+        action: "vault.purchase.webhook",
+        result: "success",
+        details: { packageId, shards: pkg.shards, sessionId: session.id },
+      })
       console.log(`[vault] Credited ${pkg.shards} shards to ${clerkId} (${packageId})`)
     } catch (err) {
       console.error("[vault] Failed to credit shards:", err)
@@ -157,6 +191,103 @@ vaultRoutes.post("/webhook", async (c) => {
   }
 
   return c.json({ received: true })
+})
+
+// GET /vault/verify-purchase?sessionId=... — authenticated
+// Verifica que el pago fue completado en Stripe y acredita shards (idempotente).
+// Esto resuelve el problema de que en desarrollo el webhook de Stripe no llega a localhost.
+vaultRoutes.get("/verify-purchase", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+  const sessionId = c.req.query("sessionId")
+
+  if (!sessionId) {
+    return c.json({ error: "sessionId is required" }, 400)
+  }
+
+  try {
+    const stripe = getStripe()
+    const session = await stripe.checkout.sessions.retrieve(sessionId)
+
+    // Verificar que el pago fue completado
+    if (session.payment_status !== "paid") {
+      return c.json({ error: "Payment not completed", status: session.payment_status }, 402)
+    }
+
+    // Verificar que la sesion pertenece al usuario autenticado
+    if (session.metadata?.clerkId !== clerkId) {
+      return c.json({ error: "Unauthorized" }, 403)
+    }
+
+    const packageId = session.metadata?.packageId
+    const pkg = packageId ? PACKAGES[packageId] : null
+    if (!pkg) {
+      return c.json({ error: "Unknown package" }, 400)
+    }
+
+    const db = await getDb()
+
+    // Idempotencia: usar una coleccion separada para rastrear sesiones ya procesadas.
+    // Si la sesion ya fue procesada, simplemente devolvemos el balance actual.
+    const processed = db.collection<{ sessionId: string; clerkId: string; processedAt: Date }>(
+      "processed_checkouts"
+    )
+
+    // Crear indice unico si no existe (esto es un no-op si ya existe)
+    await processed.createIndex({ sessionId: 1 }, { unique: true })
+
+    let alreadyProcessed = false
+    try {
+      await processed.insertOne({ sessionId, clerkId, processedAt: new Date() })
+    } catch {
+      // Duplicate key = sesion ya procesada
+      alreadyProcessed = true
+    }
+
+    const users = usersCol(db)
+
+    if (!alreadyProcessed) {
+      // Primera vez: acreditar shards
+      await users.updateOne(
+        { clerkId },
+        {
+          $inc: { shards: pkg.shards },
+          $setOnInsert: {
+            username: `binder_${clerkId.slice(-6)}`,
+            title: "Aether Binder",
+            pityCounter: 0,
+            pityMythicCounter: 0,
+            inventory: [],
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true }
+      )
+      const credited = await users.findOne({ clerkId })
+      await recordShardTransaction(db, {
+        userId: clerkId,
+        type: "recarga",
+        amount: pkg.shards,
+        balanceAfter: credited?.shards ?? pkg.shards,
+        description: `Recarga vía Stripe: ${pkg.name} (+${pkg.shards} Sh)`,
+      })
+      await logAudit(db, c, {
+        userId: clerkId,
+        action: "vault.purchase.verify",
+        result: "success",
+        details: { packageId, shards: pkg.shards, sessionId },
+      })
+      console.log(`[vault] verify-purchase: credited ${pkg.shards} shards to ${clerkId} (${packageId})`)
+    } else {
+      console.log(`[vault] verify-purchase: session ${sessionId} already processed for ${clerkId}`)
+    }
+
+    // Devolver el balance actualizado
+    const user = await users.findOne({ clerkId })
+    return c.json({ shards: user?.shards ?? 0, alreadyProcessed })
+  } catch (err) {
+    console.error("[vault] verify-purchase error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
 })
 
 export default vaultRoutes

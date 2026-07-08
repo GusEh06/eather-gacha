@@ -12,6 +12,7 @@ import { esES } from "@clerk/localizations"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { MasterLayout } from "../components/ui/MasterLayout"
 import { LivingAtmosphere } from "../components/ui/LivingAtmosphere"
+import { NotFoundPage, ErrorPage } from "../components/ui/ErrorPages"
 
 import appCss from "../styles.css?url"
 
@@ -47,6 +48,9 @@ export const Route = createRootRoute({
   }),
   shellComponent: RootDocument,
   component: RootLayout,
+  // P-09: páginas de error coherentes con el juego
+  notFoundComponent: NotFoundPage,
+  errorComponent: ({ error }) => <ErrorPage error={error} />,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {

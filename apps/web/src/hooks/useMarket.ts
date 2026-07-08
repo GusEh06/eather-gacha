@@ -78,6 +78,37 @@ export function useMarketSell() {
   })
 }
 
+// ── Cancel mutation (P-33: retirar listing propio) ────────────────────────────
+export function useMarketCancel() {
+  const { getToken } = useAuth()
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (vars: { listingId: string }) => {
+      const token = await getAuthToken(getToken)
+      const res = await fetch(`${getApiUrl()}/market/cancel`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(vars),
+      })
+      if (!res.ok) {
+        const err = (await res.json().catch(() => ({ error: "Unknown error" }))) as {
+          error?: string
+        }
+        throw new Error(err.error ?? "Cancel failed")
+      }
+      return res.json() as Promise<{ success: boolean }>
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["market-listings"] })
+      qc.invalidateQueries({ queryKey: ["inventory"] })
+    },
+  })
+}
+
 // ── Buy mutation ──────────────────────────────────────────────────────────────
 export function useMarketBuy() {
   const { getToken } = useAuth()

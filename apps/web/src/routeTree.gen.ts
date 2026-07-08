@@ -11,11 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as RiftRouteImport } from './routes/rift'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as BazaarRouteImport } from './routes/bazaar'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminLogsRouteImport } from './routes/admin/logs'
+import { Route as AdminEntitiesRouteImport } from './routes/admin/entities'
+import { Route as AdminBazaarRouteImport } from './routes/admin/bazaar'
 
 const VaultRoute = VaultRouteImport.update({
   id: '/vault',
@@ -25,6 +30,11 @@ const VaultRoute = VaultRouteImport.update({
 const RiftRoute = RiftRouteImport.update({
   id: '/rift',
   path: '/rift',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionRoute = CollectionRouteImport.update({
@@ -52,22 +62,52 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminEntitiesRoute = AdminEntitiesRouteImport.update({
+  id: '/entities',
+  path: '/entities',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBazaarRoute = AdminBazaarRouteImport.update({
+  id: '/bazaar',
+  path: '/bazaar',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
+  '/profile': typeof ProfileRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
+  '/admin/bazaar': typeof AdminBazaarRoute
+  '/admin/entities': typeof AdminEntitiesRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
+  '/profile': typeof ProfileRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
+  '/admin/bazaar': typeof AdminBazaarRoute
+  '/admin/entities': typeof AdminEntitiesRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
@@ -76,8 +116,13 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
+  '/profile': typeof ProfileRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
+  '/admin/bazaar': typeof AdminBazaarRoute
+  '/admin/entities': typeof AdminEntitiesRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -87,19 +132,40 @@ export interface FileRouteTypes {
     | '/admin'
     | '/bazaar'
     | '/collection'
+    | '/profile'
     | '/rift'
     | '/vault'
+    | '/admin/bazaar'
+    | '/admin/entities'
+    | '/admin/logs'
+    | '/admin/users'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/bazaar' | '/collection' | '/rift' | '/vault' | '/admin'
+  to:
+    | '/'
+    | '/bazaar'
+    | '/collection'
+    | '/profile'
+    | '/rift'
+    | '/vault'
+    | '/admin/bazaar'
+    | '/admin/entities'
+    | '/admin/logs'
+    | '/admin/users'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin'
     | '/bazaar'
     | '/collection'
+    | '/profile'
     | '/rift'
     | '/vault'
+    | '/admin/bazaar'
+    | '/admin/entities'
+    | '/admin/logs'
+    | '/admin/users'
     | '/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -108,6 +174,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   BazaarRoute: typeof BazaarRoute
   CollectionRoute: typeof CollectionRoute
+  ProfileRoute: typeof ProfileRoute
   RiftRoute: typeof RiftRoute
   VaultRoute: typeof VaultRoute
 }
@@ -126,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/rift'
       fullPath: '/rift'
       preLoaderRoute: typeof RiftRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collection': {
@@ -163,14 +237,50 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/entities': {
+      id: '/admin/entities'
+      path: '/entities'
+      fullPath: '/admin/entities'
+      preLoaderRoute: typeof AdminEntitiesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bazaar': {
+      id: '/admin/bazaar'
+      path: '/bazaar'
+      fullPath: '/admin/bazaar'
+      preLoaderRoute: typeof AdminBazaarRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminBazaarRoute: typeof AdminBazaarRoute
+  AdminEntitiesRoute: typeof AdminEntitiesRoute
+  AdminLogsRoute: typeof AdminLogsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminBazaarRoute: AdminBazaarRoute,
+  AdminEntitiesRoute: AdminEntitiesRoute,
+  AdminLogsRoute: AdminLogsRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -181,6 +291,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   BazaarRoute: BazaarRoute,
   CollectionRoute: CollectionRoute,
+  ProfileRoute: ProfileRoute,
   RiftRoute: RiftRoute,
   VaultRoute: VaultRoute,
 }
