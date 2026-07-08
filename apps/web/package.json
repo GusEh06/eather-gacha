@@ -22,7 +22,7 @@
     "@tanstack/react-router-devtools": "latest",
     "@tanstack/react-router-ssr-query": "latest",
     "@tanstack/react-start": "latest",
-    "@tanstack/router-plugin": "^1.132.0",
+    "@tanstack/router-plugin": "latest",
     "@tsparticles/react": "^3.0.0",
     "@tsparticles/slim": "^3.9.1",
     "animejs": "3.2.2",
