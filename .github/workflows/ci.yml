@@ -78,10 +78,12 @@ jobs:
           curl -sf http://localhost:3001/health
 
       - name: Install Playwright browsers
-        run: bunx --cwd apps/web playwright install --with-deps chromium
+        working-directory: apps/web
+        run: bunx playwright install --with-deps chromium
 
       - name: Run Playwright tests (chromium)
-        run: bun run --cwd apps/web test:e2e -- --project=chromium
+        working-directory: apps/web
+        run: bunx playwright test --project=chromium
 
       - name: Upload Playwright report
         if: failure()
