@@ -1,11 +1,23 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import * as z from "zod"
 import type { Db } from "mongodb"
-import { entitiesCol, marketListingsCol, userEntitiesCol } from "../db/collections"
+import {
+  entitiesCol,
+  marketListingsCol,
+  userEntitiesCol,
+  usersCol,
+  shardTransactionsCol,
+} from "../db/collections"
 import { getOrProvisionProfile } from "../services/profileService"
-import { getCurrentRiftRotation } from "../services/rift"
+import { getCurrentRiftRotation, buyRiftSlot, RiftError } from "../services/rift"
 import { performInvoke, InvokeError } from "../services/invokeService"
-import { buyListing, MarketError } from "../services/marketService"
+import {
+  buyListing,
+  createListing,
+  getMarketAnalytics,
+  MarketError,
+} from "../services/marketService"
+import { resolveUserRole } from "../middleware/roles"
 
 function textResult(data: unknown) {
   return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] }
@@ -190,6 +202,171 @@ export function createMcpServerForUser(db: Db, userId: string): McpServer {
           sold: slot.sold,
           entity: entityMap.get(slot.entityId.toString()) ?? null,
         })),
+      })
+    }
+  )
+
+  server.registerTool(
+    "sell_bazaar_listing",
+    {
+      title: "Publicar en el Hollow Bazaar",
+      description:
+        "Publica una entidad propia en venta en el Hollow Bazaar. Acción con efectos reales en el mercado — confirma con el usuario (entidad y precio) antes de llamarla.",
+      inputSchema: {
+        userEntityId: z.string().describe("ID de la entidad del inventario (userEntityId)"),
+        priceShards: z.number().int().positive().describe("Precio en Shards"),
+      },
+    },
+    async ({ userEntityId, priceShards }) => {
+      try {
+        const result = await createListing(db, userId, userEntityId, priceShards, null)
+        return textResult(result)
+      } catch (err) {
+        if (err instanceof MarketError) return errorResult(err.message)
+        throw err
+      }
+    }
+  )
+
+  server.registerTool(
+    "buy_rift_slot",
+    {
+      title: "Comprar slot del Rift",
+      description:
+        "Compra un slot (0-4) de la rotación diaria del Rift. Gasta Shards reales — confirma con el usuario (slot y precio) antes de llamarla.",
+      inputSchema: { slotIndex: z.number().int().min(0).max(4).describe("Índice del slot (0-4)") },
+    },
+    async ({ slotIndex }) => {
+      try {
+        const result = await buyRiftSlot(db, userId, slotIndex, null)
+        return textResult(result)
+      } catch (err) {
+        if (err instanceof RiftError) return errorResult(err.message)
+        throw err
+      }
+    }
+  )
+
+  server.registerTool(
+    "get_market_analytics",
+    {
+      title: "Analíticas del mercado",
+      description:
+        "Estadísticas de precios del Hollow Bazaar: listings activos por rareza (promedio/mín/máx) y volumen de ventas de los últimos 7 días.",
+      inputSchema: {},
+    },
+    async () => textResult(await getMarketAnalytics(db))
+  )
+
+  server.registerTool(
+    "get_transactions",
+    {
+      title: "Historial de transacciones",
+      description: "Historial de movimientos de Shards del Aether Binder autenticado (más recientes primero).",
+      inputSchema: {
+        limit: z.number().int().min(1).max(200).optional().describe("Máximo de movimientos (default 50)"),
+      },
+    },
+    async ({ limit }) => {
+      const transactions = await shardTransactionsCol(db)
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(Math.min(limit ?? 50, 200))
+        .toArray()
+
+      return textResult({
+        transactions: transactions.map((t) => ({
+          type: t.type,
+          amount: t.amount,
+          balanceAfter: t.balanceAfter,
+          description: t.description,
+          createdAt: t.createdAt,
+        })),
+      })
+    }
+  )
+
+  server.registerTool(
+    "search_entities",
+    {
+      title: "Buscar entidades",
+      description: "Busca entidades del catálogo por nombre (parcial, sin distinguir mayúsculas) y/o rareza.",
+      inputSchema: {
+        name: z.string().optional().describe("Nombre o fragmento del nombre"),
+        rarity: z.string().optional().describe("Rareza exacta (dust, nebula, comet, nova, pulsar, eclipse, singularity)"),
+      },
+    },
+    async ({ name, rarity }) => {
+      const filter: Record<string, unknown> = {}
+      if (name) {
+        // Escapar caracteres especiales de regex en la búsqueda del usuario
+        filter.nombre = { $regex: name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), $options: "i" }
+      }
+      if (rarity) filter.rareza = rarity
+
+      const entities = await entitiesCol(db).find(filter).limit(50).toArray()
+      return textResult({
+        count: entities.length,
+        entities: entities.map((e) => ({
+          _id: e._id!.toString(),
+          nombre: e.nombre,
+          rareza: e.rareza,
+          epoca: e.epoca,
+          arquetipo: e.arquetipo,
+          disponibleGacha: e.disponibleGacha,
+          disponibleRift: e.disponibleRift,
+        })),
+      })
+    }
+  )
+
+  server.registerTool(
+    "get_admin_stats",
+    {
+      title: "Estadísticas del sistema (admin)",
+      description:
+        "Estadísticas económicas globales del sistema. Solo disponible para usuarios con rol admin — falla con acceso denegado para el resto.",
+      inputSchema: {},
+    },
+    async () => {
+      const role = await resolveUserRole(userId)
+      if (role !== "admin") {
+        return errorResult("Forbidden: requires admin role")
+      }
+
+      const today = new Date()
+      today.setUTCHours(0, 0, 0, 0)
+
+      const [totalUsers, shardsAgg, totalEntities, activeListings, dailyInvocations, dailySalesAgg] =
+        await Promise.all([
+          usersCol(db).countDocuments({}),
+          usersCol(db)
+            .aggregate<{ total: number }>([{ $group: { _id: null, total: { $sum: "$shards" } } }])
+            .toArray(),
+          entitiesCol(db).countDocuments({}),
+          marketListingsCol(db).countDocuments({ status: "active" }),
+          shardTransactionsCol(db).countDocuments({
+            type: "invocacion",
+            createdAt: { $gte: today },
+          }),
+          marketListingsCol(db)
+            .aggregate<{ count: number; volume: number }>([
+              { $match: { status: "sold", soldAt: { $gte: today } } },
+              { $group: { _id: null, count: { $sum: 1 }, volume: { $sum: "$priceShards" } } },
+            ])
+            .toArray(),
+        ])
+
+      const dailySales = dailySalesAgg[0] ?? { count: 0, volume: 0 }
+
+      return textResult({
+        totalUsers,
+        shardsCirculating: shardsAgg[0]?.total ?? 0,
+        totalEntities,
+        activeListings,
+        dailyInvocations,
+        dailySales,
+        tributeToday: dailySales.volume - Math.floor(dailySales.volume * 0.95),
       })
     }
   )
