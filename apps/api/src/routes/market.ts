@@ -9,12 +9,9 @@ import {
   ObjectId,
 } from "../db/collections"
 import { logAudit } from "../services/audit"
-import { buyListing, MarketError } from "../services/marketService"
+import { buyListing, createListing, MarketError } from "../services/marketService"
 
 const marketRoutes = new Hono()
-
-const NON_BAZAAR = ["dust", "nebula"]
-const DEFAULT_LISTING_LIMIT = 20 // P-39
 
 // ── GET /market/list ──────────────────────────────────────────────────────────
 // Public — no auth required
@@ -74,81 +71,15 @@ marketRoutes.post("/sell", authMiddleware, async (c) => {
   if (!userEntityId || typeof priceShards !== "number") {
     return c.json({ error: "userEntityId and priceShards are required" }, 400)
   }
-  if (priceShards < 1 || !Number.isInteger(priceShards)) {
-    return c.json({ error: "priceShards must be a positive integer" }, 400)
-  }
 
   try {
     const db = await getDb()
-
-    // P-39: límite de listings activos por usuario (se verifica antes que la propiedad)
-    const sellerDoc = await usersCol(db).findOne(
-      { clerkId },
-      { projection: { listingLimit: 1 } }
-    )
-    const limit = sellerDoc?.listingLimit ?? DEFAULT_LISTING_LIMIT
-    const activeCount = await marketListingsCol(db).countDocuments({
-      sellerId: clerkId,
-      status: "active",
-    })
-    if (activeCount >= limit) {
-      return c.json(
-        { error: `Active listing limit reached (${limit}). Cancel a listing before creating a new one.` },
-        400
-      )
-    }
-
-    // Validate ownership of the UserEntity
-    const userEntity = await userEntitiesCol(db).findOne({
-      _id: new ObjectId(userEntityId),
-      ownerId: clerkId,
-    })
-    if (!userEntity) {
-      return c.json({ error: "Entity not found or not owned by you" }, 404)
-    }
-
-    // Fetch the canonical entity doc for the snapshot + rarity check
-    const entityDoc = await entitiesCol(db).findOne({ _id: userEntity.entityId })
-    if (!entityDoc) {
-      return c.json({ error: "Entity data not found" }, 404)
-    }
-
-    if (NON_BAZAAR.includes(entityDoc.rareza)) {
-      return c.json({ error: "Dust and Nebula entities cannot be listed on the Bazaar" }, 400)
-    }
-
-    // Prevent duplicate listings for the same UserEntity
-    const existingListing = await marketListingsCol(db).findOne({
-      userEntityId: new ObjectId(userEntityId),
-      status: "active",
-    })
-    if (existingListing) {
-      return c.json({ error: "This entity is already listed" }, 409)
-    }
-
-    // Fetch seller username
-    const seller = await usersCol(db).findOne({ clerkId })
-    if (!seller) return c.json({ error: "User not found" }, 404)
-
-    const inserted = await marketListingsCol(db).insertOne({
-      sellerId: clerkId,
-      sellerUsername: seller.username,
-      userEntityId: new ObjectId(userEntityId),
-      entitySnapshot: entityDoc,
-      priceShards,
-      status: "active",
-      createdAt: new Date(),
-    })
-
-    await logAudit(db, c, {
-      userId: clerkId,
-      action: "market.listing.create",
-      result: "success",
-      details: { listingId: inserted.insertedId.toString(), entity: entityDoc.nombre, priceShards },
-    })
-
-    return c.json({ listingId: inserted.insertedId.toString(), message: "Listed successfully" })
+    const result = await createListing(db, clerkId, userEntityId, priceShards, c)
+    return c.json(result)
   } catch (err) {
+    if (err instanceof MarketError) {
+      return c.json({ error: err.message, ...err.extra }, err.status as 400 | 404 | 409)
+    }
     console.error("[market] sell error:", err)
     return c.json({ error: "Internal error" }, 500)
   }

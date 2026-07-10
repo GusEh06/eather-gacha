@@ -1,10 +1,8 @@
 import { Hono } from "hono"
 import { authMiddleware } from "../middleware/auth"
 import { getDb } from "../db/client"
-import { usersCol, userEntitiesCol, entitiesCol, riftRotationCol } from "../db/collections"
-import { getCurrentRiftRotation } from "../services/rift"
-import { logAudit } from "../services/audit"
-import { recordShardTransaction } from "../services/transactions"
+import { entitiesCol } from "../db/collections"
+import { getCurrentRiftRotation, buyRiftSlot, RiftError } from "../services/rift"
 
 const riftRoutes = new Hono()
 
@@ -61,84 +59,18 @@ riftRoutes.post("/buy", authMiddleware, async (c) => {
   }
 
   const { slotIndex } = body
-  if (typeof slotIndex !== "number" || slotIndex < 0 || slotIndex > 4) {
+  if (typeof slotIndex !== "number") {
     return c.json({ error: "slotIndex must be 0–4" }, 400)
   }
 
   try {
     const db = await getDb()
-    const today = new Date().toISOString().split("T")[0]!
-
-    const rotation = await riftRotationCol(db).findOne({ date: today })
-    if (!rotation) return c.json({ error: "No Rift rotation for today" }, 404)
-
-    const slot = rotation.slots[slotIndex]
-    if (!slot) return c.json({ error: "Invalid slot index" }, 400)
-    if (slot.sold) return c.json({ error: "Slot already claimed" }, 410)
-
-    // 1. Atomically deduct shards — only proceeds if user has enough
-    const buyer = await usersCol(db).findOneAndUpdate(
-      { clerkId, shards: { $gte: slot.priceShards } },
-      { $inc: { shards: -slot.priceShards } },
-      { returnDocument: "after" }
-    )
-    if (!buyer) {
-      const exists = await usersCol(db).findOne({ clerkId })
-      if (!exists) return c.json({ error: "User not found" }, 404)
-      return c.json(
-        { error: "Insufficient Shards", needed: slot.priceShards, have: exists.shards },
-        402
-      )
-    }
-
-    // 2. Atomically claim the slot (now that payment is secured)
-    const claimed = await riftRotationCol(db).findOneAndUpdate(
-      { date: today, [`slots.${slotIndex}.sold`]: false },
-      { $set: { [`slots.${slotIndex}.sold`]: true } },
-      { returnDocument: "after" }
-    )
-    if (!claimed) {
-      // Slot was concurrently claimed — refund shards
-      await usersCol(db).updateOne({ clerkId }, { $inc: { shards: slot.priceShards } })
-      return c.json({ error: "Slot was already claimed" }, 410)
-    }
-
-    // Create user_entity record
-    const inserted = await userEntitiesCol(db).insertOne({
-      entityId: slot.entityId,
-      ownerId: clerkId,
-      obtainedAt: new Date(),
-      obtainedVia: "rift",
-    })
-
-    // Add to inventory
-    await usersCol(db).updateOne(
-      { clerkId },
-      { $push: { inventory: inserted.insertedId } }
-    )
-
-    // P-40 + P-04: historial y auditoría
-    const boughtEntity = await entitiesCol(db).findOne({ _id: slot.entityId })
-    await recordShardTransaction(db, {
-      userId: clerkId,
-      type: "compra_rift",
-      amount: -slot.priceShards,
-      balanceAfter: buyer.shards,
-      description: `Compra en Rift: ${boughtEntity?.nombre ?? "entidad"} (${slot.priceShards} Sh)`,
-    })
-    await logAudit(db, c, {
-      userId: clerkId,
-      action: "rift.buy",
-      result: "success",
-      details: { slotIndex, entity: boughtEntity?.nombre, priceShards: slot.priceShards },
-    })
-
-    return c.json({
-      message: "Purchase successful",
-      newShards: buyer.shards,           // already post-deduction (returnDocument: "after")
-      userEntityId: inserted.insertedId.toString(),
-    })
+    const result = await buyRiftSlot(db, clerkId, slotIndex, c)
+    return c.json(result)
   } catch (err) {
+    if (err instanceof RiftError) {
+      return c.json({ error: err.message, ...err.extra }, err.status as 400 | 402 | 404 | 410)
+    }
     console.error("[rift] buy error:", err)
     return c.json({ error: "Internal error" }, 500)
   }
