@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { logger } from "hono/logger"
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js"
 import clerkRoutes from "./routes/clerk"
 import userRoutes from "./routes/user"
 import invokeRoutes from "./routes/invoke"
@@ -10,6 +11,8 @@ import vaultRoutes from "./routes/vault"
 import { startRiftCron } from "./crons/riftRotation"
 import { getDb } from "./db/client"
 import { requestIdMiddleware } from "./middleware/requestId"
+import { mcpAuthMiddleware } from "./middleware/mcpAuth"
+import { createMcpServerForUser } from "./mcp/server"
 
 import adminRoutes from "./routes/admin"
 import metricsRoutes from "./routes/metrics"
@@ -53,6 +56,18 @@ app.route("/rift", riftRoutes)
 app.route("/vault", vaultRoutes)
 app.route("/admin", adminRoutes)
 app.route("/metrics", metricsRoutes)
+
+// MCP: servidor remoto (HTTP), autenticado con la API key personal generada
+// en POST /user/mcp-key. Instancia stateless — un McpServer nuevo por request,
+// atado al userId ya resuelto por mcpAuthMiddleware.
+app.all("/mcp", mcpAuthMiddleware, async (c) => {
+  const userId = c.get("userId") as string
+  const db = await getDb()
+  const server = createMcpServerForUser(db, userId)
+  const transport = new WebStandardStreamableHTTPServerTransport()
+  await server.connect(transport)
+  return transport.handleRequest(c.req.raw)
+})
 
 // Start midnight Rift rotation cron after DB is ready
 getDb()

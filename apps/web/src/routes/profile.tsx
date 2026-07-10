@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
+import { useAuth } from "@clerk/tanstack-react-start"
 import { useUserProfile } from "../hooks/useUserProfile"
 import { useTransactions, type ShardTransaction } from "../hooks/useNotifications"
+import { getAuthToken } from "../lib/auth"
 
 export const Route = createFileRoute("/profile")({ component: ProfilePage })
 
@@ -34,6 +36,99 @@ function exportCsv(transactions: ShardTransaction[]) {
   a.download = `aether_transacciones_${new Date().toISOString().split("T")[0]}.csv`
   a.click()
   URL.revokeObjectURL(url)
+}
+
+function McpKeySection() {
+  const { getToken } = useAuth()
+  const [apiKey, setApiKey] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  const apiUrl = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:3001"
+  const mcpUrl = `${apiUrl}/mcp`
+
+  const generateKey = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const token = await getAuthToken(getToken)
+      const res = await fetch(`${apiUrl}/user/mcp-key`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error("No se pudo generar la API key")
+      const data = (await res.json()) as { apiKey: string }
+      setApiKey(data.apiKey)
+    } catch (err) {
+      setError((err as Error).message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const copyKey = async () => {
+    if (!apiKey) return
+    await navigator.clipboard.writeText(apiKey)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const configSnippet = apiKey
+    ? `claude mcp add --transport http aether-gacha ${mcpUrl} --header "Authorization: Bearer ${apiKey}"`
+    : null
+
+  return (
+    <div style={{ margin: "0 0 2.5rem 0" }}>
+      <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.2rem", color: "var(--text-primary, #e8e8f0)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+        Acceso MCP (agentes de IA)
+      </h2>
+      <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-subtle)", padding: "1.25rem" }}>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.88rem", marginBottom: "1rem" }}>
+          Genera una API key personal para conectar un agente de IA (Claude Code, Codex) al
+          servidor MCP de Aether Gacha. El agente podrá consultar tu perfil, inventario, pity,
+          el Bazaar y el Rift, e invocar el gacha en tu nombre.
+        </p>
+
+        {!apiKey ? (
+          <button
+            className="btn-secondary"
+            data-testid="generate-mcp-key"
+            style={{ fontSize: "0.85rem", padding: "0.5rem 1.1rem" }}
+            disabled={loading}
+            onClick={generateKey}
+          >
+            {loading ? "Generando..." : "Generar API Key"}
+          </button>
+        ) : (
+          <>
+            <p style={{ color: "#f0ad4e", fontSize: "0.8rem", marginBottom: "0.5rem" }}>
+              ⚠ Guarda esta key ahora — solo se muestra una vez.
+            </p>
+            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "1rem" }}>
+              <code
+                data-testid="mcp-key-value"
+                style={{ background: "rgba(0,0,0,0.35)", padding: "0.5rem 0.75rem", fontSize: "0.8rem", color: "#1abc9c", overflowX: "auto", flex: 1 }}
+              >
+                {apiKey}
+              </code>
+              <button className="btn-secondary" style={{ fontSize: "0.8rem", padding: "0.4rem 0.9rem", whiteSpace: "nowrap" }} onClick={copyKey}>
+                {copied ? "✓ Copiado" : "Copiar"}
+              </button>
+            </div>
+            <p style={{ color: "var(--text-secondary)", fontSize: "0.8rem", marginBottom: "0.4rem" }}>
+              Para importarlo en Claude Code:
+            </p>
+            <pre style={{ background: "rgba(0,0,0,0.35)", padding: "0.75rem", fontSize: "0.72rem", color: "var(--text-secondary)", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+              {configSnippet}
+            </pre>
+          </>
+        )}
+
+        {error && <p style={{ color: "#ff3399", fontSize: "0.85rem", marginTop: "0.75rem" }}>{error}</p>}
+      </div>
+    </div>
+  )
 }
 
 function ProfilePage() {
@@ -93,6 +188,9 @@ function ProfilePage() {
           ))}
         </div>
       )}
+
+      {/* MCP API key */}
+      <McpKeySection />
 
       {/* Historial */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>

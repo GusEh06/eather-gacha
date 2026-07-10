@@ -1,5 +1,8 @@
 import { Hono } from "hono"
+import { randomBytes } from "node:crypto"
 import { authMiddleware } from "../middleware/auth"
+import { hashApiKey } from "../middleware/mcpAuth"
+import { getOrProvisionProfile } from "../services/profileService"
 import { getDb } from "../db/client"
 import {
   usersCol,
@@ -7,12 +10,11 @@ import {
   entitiesCol,
   shardTransactionsCol,
   notificationsCol,
+  apiKeysCol,
   ObjectId,
 } from "../db/collections"
 
 const userRoutes = new Hono()
-
-const ONBOARDING_SHARDS = 320
 
 // GET /user/profile — returns shards, pity counters, inventory count
 // Auto-provisions the user in MongoDB on first authenticated request
@@ -22,30 +24,7 @@ userRoutes.get("/profile", authMiddleware, async (c) => {
 
   try {
     const db = await getDb()
-    const users = usersCol(db)
-
-    let user = await users.findOne({ clerkId })
-
-    // Auto-provision: create user if they exist in Clerk but not in MongoDB
-    if (!user) {
-      const newUser = {
-        clerkId,
-        username: `binder_${clerkId.slice(-6)}`,
-        title: "Aether Binder",
-        shards: ONBOARDING_SHARDS,
-        pityCounter: 0,
-        pityMythicCounter: 0,
-        inventory: [],
-        createdAt: new Date(),
-      }
-      await users.insertOne(newUser)
-      console.log(`[user] Auto-provisioned Aether Binder (${clerkId}) with ${ONBOARDING_SHARDS} Shards`)
-      user = await users.findOne({ clerkId })
-    }
-
-    if (!user) {
-      return c.json({ error: "User not found" }, 404)
-    }
+    const user = await getOrProvisionProfile(db, clerkId)
 
     return c.json({
       clerkId: user.clerkId,
@@ -193,6 +172,29 @@ userRoutes.patch("/notifications/read-all", authMiddleware, async (c) => {
     return c.json({ success: true })
   } catch (err) {
     console.error("[user] mark all read error:", err)
+    return c.json({ error: "Internal error" }, 500)
+  }
+})
+
+// ── MCP: POST /user/mcp-key — genera una API key personal para el servidor MCP ─
+// La key en texto plano solo se devuelve en esta respuesta; solo se guarda su hash.
+userRoutes.post("/mcp-key", authMiddleware, async (c) => {
+  const clerkId = c.get("userId") as string
+
+  try {
+    const db = await getDb()
+    const rawKey = `aeth_${randomBytes(24).toString("hex")}`
+
+    await apiKeysCol(db).insertOne({
+      userId: clerkId,
+      keyHash: hashApiKey(rawKey),
+      label: "MCP server",
+      createdAt: new Date(),
+    })
+
+    return c.json({ apiKey: rawKey })
+  } catch (err) {
+    console.error("[user] mcp-key generation error:", err)
     return c.json({ error: "Internal error" }, 500)
   }
 })

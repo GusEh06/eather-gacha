@@ -109,6 +109,17 @@ export interface RiftRotationDoc {
   expiresAt: Date
 }
 
+// MCP: API key personal del Aether Binder para autenticar al servidor MCP.
+// Se guarda solo el hash (sha256); la key en texto plano se muestra una sola vez.
+export interface ApiKeyDoc {
+  _id?: ObjectId
+  userId: string // clerkId
+  keyHash: string
+  label: string
+  createdAt: Date
+  lastUsedAt?: Date
+}
+
 // ─── Typed collection accessors ───────────────────────────────────────────────
 
 export function usersCol(db: Db): Collection<UserDoc> {
@@ -141,4 +152,8 @@ export function notificationsCol(db: Db): Collection<NotificationDoc> {
 
 export function shardTransactionsCol(db: Db): Collection<ShardTransactionDoc> {
   return db.collection<ShardTransactionDoc>("shard_transactions")
+}
+
+export function apiKeysCol(db: Db): Collection<ApiKeyDoc> {
+  return db.collection<ApiKeyDoc>("api_keys")
 }

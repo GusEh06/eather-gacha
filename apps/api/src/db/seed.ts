@@ -1,4 +1,4 @@
-import { MongoClient, ObjectId } from "mongodb"
+import { MongoClient, type ObjectId } from "mongodb"
 
 const MONGODB_URI =
   process.env.MONGODB_URI ?? "mongodb://root:root@localhost:27017/aether?authSource=admin"
