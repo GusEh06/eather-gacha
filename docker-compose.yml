@@ -28,8 +28,10 @@ services:
 
   api:
     build:
-      context: ./apps/api
-      dockerfile: Dockerfile
+      # Los Dockerfiles esperan el contexto en la RAÍZ del repo para poder
+      # copiar packages/shared (ver apps/api/Dockerfile).
+      context: .
+      dockerfile: apps/api/Dockerfile
     container_name: aether-api
     restart: unless-stopped
     networks:
@@ -41,16 +43,16 @@ services:
       mongo:
         condition: service_healthy
     volumes:
-      - ./apps/api:/app
-      - /app/node_modules
+      - ./apps/api:/repo/apps/api
+      - /repo/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
 
   web:
     build:
-      context: ./apps/web
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/Dockerfile
     container_name: aether-web
     restart: unless-stopped
     networks:
@@ -61,8 +63,8 @@ services:
     depends_on:
       - api
     volumes:
-      - ./apps/web:/app
-      - /app/node_modules
+      - ./apps/web:/repo/apps/web
+      - /repo/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
