@@ -3,6 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router"
 import { useAuth, SignInButton, UserButton, useUser } from "@clerk/tanstack-react-start"
 import { useUserProfile } from "../../hooks/useUserProfile"
 import { LivingAtmosphere } from "./LivingAtmosphere"
+import { NotificationBell } from "./NotificationBell"
 
 const NAV_ITEMS = [
   { to: "/",           label: "Ritual",         index: "01", sub: "Nuevos Aliados" },
@@ -10,6 +11,7 @@ const NAV_ITEMS = [
   { to: "/rift",       label: "Las Fisuras",    index: "03", sub: "Misiones Rápidas" },
   { to: "/vault",      label: "La Bóveda",      index: "04", sub: "Adquiere Shards" },
   { to: "/collection", label: "Colección",      index: "05", sub: "Tus Entidades" },
+  { to: "/profile",    label: "Perfil",         index: "06", sub: "Tu Binder" },
 ] as const
 
 const CONTEXT_COPY: Record<string, { eyebrow: string; title: string }> = {
@@ -18,6 +20,7 @@ const CONTEXT_COPY: Record<string, { eyebrow: string; title: string }> = {
   "/rift":       { eyebrow: "Drifting Abyss",      title: "VOID EXPEDITIONS" },
   "/vault":      { eyebrow: "Resource Reserve",    title: "SHARD ACQUISITION" },
   "/collection": { eyebrow: "Neural Archive",      title: "BINDER's PACT" },
+  "/profile":    { eyebrow: "Binder Registry",     title: "SOUL LEDGER" },
 }
 
 interface MasterLayoutProps {
@@ -122,7 +125,10 @@ export function MasterLayout({ children }: MasterLayoutProps) {
         <header className="gacha-hud" ref={hudRef}>
           <div className="gacha-hud-profile">
             {isSignedIn ? (
-              <UserButton />
+              <>
+                <NotificationBell />
+                <UserButton />
+              </>
             ) : (
               <SignInButton mode="modal">
                  <button className="gacha-login-icon">★</button>

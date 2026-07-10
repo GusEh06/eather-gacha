@@ -15,7 +15,8 @@
     "test:e2e": "bun run --cwd apps/web test:e2e"
   },
   "overrides": {
-    "bson": "7.2.0"
+    "bson": "7.2.0",
+    "@tanstack/router-core": "1.171.14"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3"
