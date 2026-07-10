@@ -8,9 +8,16 @@
   "scripts": {
     "dev": "docker compose up",
     "dev:web": "bun --cwd apps/web dev",
-    "dev:api": "bun --cwd apps/api dev"
+    "dev:api": "bun --cwd apps/api dev",
+    "lint": "biome check .",
+    "typecheck": "bun run --cwd apps/api typecheck",
+    "test": "bun run --cwd apps/api test",
+    "test:e2e": "bun run --cwd apps/web test:e2e"
   },
   "overrides": {
     "bson": "7.2.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.3"
   }
 }

@@ -1,0 +1,92 @@
+# P-15: Pipeline de CI — corre en cada PR y push a main.
+# Job "quality": lint (Biome) + typecheck (tsc) + tests unitarios (bun test).
+# Job "e2e": levanta MongoDB + API + web y corre la suite completa de Playwright.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    name: Lint, typecheck & unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: bun run lint
+
+      - name: Typecheck (API)
+        run: bun run typecheck
+
+      - name: Unit tests (gacha engine)
+        run: bun run test
+
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: root
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      MONGODB_URI: mongodb://root:root@localhost:27017/aether?authSource=admin
+      API_URL: http://localhost:3001
+      VITE_API_URL: http://localhost:3001
+      VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      ALLOWED_ORIGINS: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Seed database
+        run: bun run --cwd apps/api seed
+
+      - name: Start API in background
+        run: |
+          bun run --cwd apps/api start &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3001/health > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:3001/health
+
+      - name: Install Playwright browsers
+        run: bunx --cwd apps/web playwright install --with-deps chromium
+
+      - name: Run Playwright tests (chromium)
+        run: bun run --cwd apps/web test:e2e -- --project=chromium
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 7
