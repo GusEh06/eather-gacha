@@ -47,8 +47,9 @@ agentes de IA operen el juego en nombre del usuario, bajo autenticación:
 - Cada binder genera su **API key personal** desde su perfil (hash sha256 en DB,
   se muestra una sola vez).
 - El servidor vive en el mismo API (`/mcp`, transporte Streamable HTTP) y expone
-  **8 tools**: perfil, inventario, balance, pity, invocar gacha, listar bazaar,
-  comprar listing y rotación del Rift.
+  **14 tools**: perfil, inventario, balance, pity, historial, búsqueda de
+  entidades, invocar gacha, listar/comprar/publicar en el Bazaar, analíticas
+  de precios, rotación y compra del Rift, y stats del sistema (solo admin).
 - Las tools reutilizan la misma lógica de negocio que las rutas REST — pity,
   validación de saldo, tributo y auditoría se aplican igual.
 
@@ -78,11 +79,11 @@ gasta Shards reales) → mostrar la entidad nueva en la Colección del navegador
 
 ## 6. Cierre: progreso y siguiente paso (≈30 s)
 
-- **GitHub Project:** 63 historias; ~46 cerradas tras este avance (todas las H-
-  del MVP + P-01..P-13, P-15, P-18..P-40 parciales, y 8 tools MCP).
+- **GitHub Project:** 63 historias; ~52 cerradas tras este avance (todas las H-
+  del MVP + P-01..P-13, P-15, P-18..P-40 parciales, y las 14 tools MCP).
   Tablero: https://github.com/users/GusEh06/projects/1
-- **Pendiente para el final:** las 7 tools MCP restantes, i18n, accesibilidad,
-  tests de carga y respaldos automáticos.
+- **Pendiente para el final:** i18n, accesibilidad, tests de carga, respaldos
+  automáticos y validación Zod exhaustiva.
 
 ---
 
