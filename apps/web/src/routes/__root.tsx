@@ -363,7 +363,9 @@ function AdminOrGameLayout() {
 
 function AttractiveLoginPage() {
   const location = useLocation()
-  const isSignUp = location.hash.includes("sign-up")
+  // Estado local para el toggle (el hash solo inicializa, para deep-linking):
+  // cambiar window.location.hash no re-renderiza el router de TanStack.
+  const [isSignUp, setIsSignUp] = useState(location.hash.includes("sign-up"))
 
   return (
     <div className="login-shell">
@@ -376,13 +378,17 @@ function AttractiveLoginPage() {
           Aether Gacha
         </h1>
 
-        {isSignUp ? <CustomSignUpForm /> : <CustomSignInForm />}
+        {isSignUp ? (
+          <CustomSignUpForm onSwitchToSignIn={() => setIsSignUp(false)} />
+        ) : (
+          <CustomSignInForm onSwitchToSignUp={() => setIsSignUp(true)} />
+        )}
       </div>
     </div>
   )
 }
 
-function CustomSignInForm() {
+function CustomSignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
   const { signIn, isLoaded } = useSignIn()
   const { setActive } = useClerk()
 
@@ -439,6 +445,7 @@ function CustomSignInForm() {
 
   function switchToSignUp() {
     window.location.hash = "#/sign-up"
+    onSwitchToSignUp()
   }
 
   return (
@@ -490,7 +497,7 @@ function CustomSignInForm() {
        redirects to hosted pages. Uses useSignUp() hook directly. ─── */
 type SignUpStep = "credentials" | "verify-email"
 
-function CustomSignUpForm() {
+function CustomSignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
   const { signUp, isLoaded } = useSignUp()
   const { setActive } = useClerk()
 
@@ -602,6 +609,7 @@ function CustomSignUpForm() {
 
   function switchToSignIn() {
     window.location.hash = "#/sign-in"
+    onSwitchToSignIn()
   }
 
   return (

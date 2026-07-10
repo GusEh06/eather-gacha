@@ -14,9 +14,24 @@ export default defineConfig({
     screenshot: "only-on-failure",
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
-    { name: "firefox", use: { ...devices["Desktop Firefox"] } },
-    { name: "webkit", use: { ...devices["Desktop Safari"] } },
+    // Registra un binder e2e fresco y guarda su sesión (e2e/.auth/binder.json)
+    // para que los specs de UI corran autenticados de forma determinística.
+    { name: "setup", testMatch: /global\.setup\.ts/ },
+    {
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
+    },
+    {
+      name: "firefox",
+      use: { ...devices["Desktop Firefox"] },
+      dependencies: ["setup"],
+    },
+    {
+      name: "webkit",
+      use: { ...devices["Desktop Safari"] },
+      dependencies: ["setup"],
+    },
   ],
   // Reusa un servidor ya corriendo en CI/desarrollo; si no hay uno, lo levanta.
   webServer: process.env.BASE_URL

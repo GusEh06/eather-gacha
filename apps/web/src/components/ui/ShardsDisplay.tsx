@@ -92,7 +92,11 @@ export function ShardsDisplay({ amount }: ShardsDisplayProps) {
       >
         ◈
       </span>
-      <span ref={valueRef} style={{ display: "inline-block", minWidth: "2ch" }}>
+      <span
+        ref={valueRef}
+        data-testid="shards-display"
+        style={{ display: "inline-block", minWidth: "2ch" }}
+      >
         {formatted}
       </span>
     </span>

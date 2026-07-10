@@ -13,8 +13,14 @@ test.describe("Unauthenticated shell", () => {
 
   test("toggling to sign-up shows the registration form", async ({ page }) => {
     await page.goto("/")
-    await page.getByRole("button", { name: /crear cuenta/i }).click()
-    await expect(page.getByRole("heading", { name: /crear cuenta/i })).toBeVisible()
+    // El click puede llegar antes de que React hidrate el shell SSR; se
+    // reintenta hasta que el toggle surta efecto.
+    await expect(async () => {
+      await page.getByRole("button", { name: /crear cuenta/i }).click()
+      await expect(page.getByRole("heading", { name: /crear cuenta/i })).toBeVisible({
+        timeout: 2_000,
+      })
+    }).toPass({ timeout: 15_000 })
     await expect(page.getByPlaceholder("binder_name")).toBeVisible()
   })
 
