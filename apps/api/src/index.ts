@@ -16,6 +16,8 @@ import { createMcpServerForUser } from "./mcp/server"
 
 import adminRoutes from "./routes/admin"
 import metricsRoutes from "./routes/metrics"
+import espiralRoutes from "./routes/espiral"
+import altarEcoRoutes from "./routes/altarEco"
 
 const app = new Hono()
 
@@ -56,6 +58,8 @@ app.route("/rift", riftRoutes)
 app.route("/vault", vaultRoutes)
 app.route("/admin", adminRoutes)
 app.route("/metrics", metricsRoutes)
+app.route("/espiral", espiralRoutes)
+app.route("/altar-eco", altarEcoRoutes)
 
 // MCP: servidor remoto (HTTP), autenticado con la API key personal generada
 // en POST /user/mcp-key. Instancia stateless — un McpServer nuevo por request,

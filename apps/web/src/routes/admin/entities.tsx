@@ -32,6 +32,10 @@ interface EntityRow {
   disponibleRift: boolean
   disponibleGacha?: boolean
   imageUrl?: string
+  // La Espiral
+  disponibleAltarEco?: boolean
+  statsOverride?: { hp?: number; atk?: number; def?: number; vel?: number } | null
+  espiralAbilityOverride?: string | null
 }
 
 const EMPTY_FORM = {
@@ -42,6 +46,12 @@ const EMPTY_FORM = {
   descripcionLore: "",
   descripcionOjos: "",
   disponibleRift: true,
+  disponibleAltarEco: false,
+  statsHp: "",
+  statsAtk: "",
+  statsDef: "",
+  statsVel: "",
+  espiralAbilityOverride: "",
 }
 
 function AdminEntities() {
@@ -76,6 +86,12 @@ function AdminEntities() {
       descripcionLore: entity.descripcionLore,
       descripcionOjos: entity.descripcionOjos,
       disponibleRift: entity.disponibleRift,
+      disponibleAltarEco: entity.disponibleAltarEco ?? false,
+      statsHp: entity.statsOverride?.hp?.toString() ?? "",
+      statsAtk: entity.statsOverride?.atk?.toString() ?? "",
+      statsDef: entity.statsOverride?.def?.toString() ?? "",
+      statsVel: entity.statsOverride?.vel?.toString() ?? "",
+      espiralAbilityOverride: entity.espiralAbilityOverride ?? "",
     })
     setImageFile(null)
     setIsFormOpen(true)
@@ -96,6 +112,19 @@ function AdminEntities() {
       form.append("descripcionOjos", formData.descripcionOjos)
       form.append("disponibleRift", formData.disponibleRift.toString())
       if (imageFile) form.append("image", imageFile)
+
+      // La Espiral (solo el PUT los procesa; una entidad nueva es jugable
+      // sin overrides gracias a los stats derivados de rareza+arquetipo)
+      if (editingId) {
+        form.append("disponibleAltarEco", formData.disponibleAltarEco.toString())
+        form.append("espiralAbilityOverride", formData.espiralAbilityOverride)
+        const override: Record<string, number> = {}
+        if (formData.statsHp) override.hp = Number(formData.statsHp)
+        if (formData.statsAtk) override.atk = Number(formData.statsAtk)
+        if (formData.statsDef) override.def = Number(formData.statsDef)
+        if (formData.statsVel) override.vel = Number(formData.statsVel)
+        form.append("statsOverride", Object.keys(override).length > 0 ? JSON.stringify(override) : "")
+      }
 
       const res = await fetch(
         editingId ? `${getApiUrl()}/admin/entities/${editingId}` : `${getApiUrl()}/admin/entities`,
@@ -270,6 +299,66 @@ function AdminEntities() {
                   />
                   Available in the Rift?
                 </label>
+
+                {editingId && (
+                  <div style={{ marginTop: "1.5rem", padding: "1rem", border: "2px dashed #999", background: "#fafaf5" }}>
+                    <div style={{ fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
+                      La Espiral (opcional)
+                    </div>
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 600, marginBottom: "0.75rem" }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.disponibleAltarEco}
+                        onChange={(e) => setFormData({ ...formData, disponibleAltarEco: e.target.checked })}
+                        style={{ width: "20px", height: "20px", accentColor: "#111" }}
+                      />
+                      Available in Altar del Eco?
+                    </label>
+                    <div style={{ fontSize: "0.8rem", color: "#666", marginBottom: "0.5rem" }}>
+                      Stats override — vacío = derivado de rareza+arquetipo (recomendado)
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                      {(
+                        [
+                          ["statsHp", "HP"],
+                          ["statsAtk", "ATK"],
+                          ["statsDef", "DEF"],
+                          ["statsVel", "VEL"],
+                        ] as const
+                      ).map(([key, label]) => (
+                        <label key={key} style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.75rem", fontWeight: 600 }}>
+                          {label}
+                          <input
+                            type="number"
+                            min={1}
+                            value={formData[key]}
+                            onChange={(e) => setFormData({ ...formData, [key]: e.target.value })}
+                            placeholder="auto"
+                            style={{ padding: "0.4rem", border: "2px solid #ccc", background: "#fff" }}
+                          />
+                        </label>
+                      ))}
+                    </div>
+                    <label style={{ display: "flex", flexDirection: "column", gap: "0.2rem", fontSize: "0.75rem", fontWeight: 600 }}>
+                      Ability override
+                      <select
+                        value={formData.espiralAbilityOverride}
+                        onChange={(e) => setFormData({ ...formData, espiralAbilityOverride: e.target.value })}
+                        style={{ padding: "0.4rem", border: "2px solid #ccc", background: "#fff" }}
+                      >
+                        <option value="">Auto (por rareza+arquetipo)</option>
+                        <option value="none">Sin habilidad</option>
+                        <option value="stun">Parálisis Astral (stun)</option>
+                        <option value="burn">Ignición del Vacío (burn)</option>
+                        <option value="team_atk_buff">Resonancia Ofensiva (buff ATK)</option>
+                        <option value="team_def_buff">Égida Compartida (buff DEF)</option>
+                        <option value="extra_turn">Fractura Temporal (turno extra)</option>
+                        <option value="ignore_def">Colapso Absoluto (ignora DEF)</option>
+                        <option value="one_time_revive">Renacer Singular (revive)</option>
+                      </select>
+                    </label>
+                  </div>
+                )}
               </div>
 
               <motion.button

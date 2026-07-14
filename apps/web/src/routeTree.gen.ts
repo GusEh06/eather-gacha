@@ -12,8 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VaultRouteImport } from './routes/vault'
 import { Route as RiftRouteImport } from './routes/rift'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as EspiralRouteImport } from './routes/espiral'
 import { Route as CollectionRouteImport } from './routes/collection'
 import { Route as BazaarRouteImport } from './routes/bazaar'
+import { Route as AltarEcoRouteImport } from './routes/altar-eco'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -37,6 +39,11 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EspiralRoute = EspiralRouteImport.update({
+  id: '/espiral',
+  path: '/espiral',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionRoute = CollectionRouteImport.update({
   id: '/collection',
   path: '/collection',
@@ -45,6 +52,11 @@ const CollectionRoute = CollectionRouteImport.update({
 const BazaarRoute = BazaarRouteImport.update({
   id: '/bazaar',
   path: '/bazaar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AltarEcoRoute = AltarEcoRouteImport.update({
+  id: '/altar-eco',
+  path: '/altar-eco',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
@@ -86,8 +98,10 @@ const AdminBazaarRoute = AdminBazaarRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/altar-eco': typeof AltarEcoRoute
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
+  '/espiral': typeof EspiralRoute
   '/profile': typeof ProfileRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
@@ -99,8 +113,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/altar-eco': typeof AltarEcoRoute
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
+  '/espiral': typeof EspiralRoute
   '/profile': typeof ProfileRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
@@ -114,8 +130,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/altar-eco': typeof AltarEcoRoute
   '/bazaar': typeof BazaarRoute
   '/collection': typeof CollectionRoute
+  '/espiral': typeof EspiralRoute
   '/profile': typeof ProfileRoute
   '/rift': typeof RiftRoute
   '/vault': typeof VaultRoute
@@ -130,8 +148,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/altar-eco'
     | '/bazaar'
     | '/collection'
+    | '/espiral'
     | '/profile'
     | '/rift'
     | '/vault'
@@ -143,8 +163,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/altar-eco'
     | '/bazaar'
     | '/collection'
+    | '/espiral'
     | '/profile'
     | '/rift'
     | '/vault'
@@ -157,8 +179,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/altar-eco'
     | '/bazaar'
     | '/collection'
+    | '/espiral'
     | '/profile'
     | '/rift'
     | '/vault'
@@ -172,8 +196,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AltarEcoRoute: typeof AltarEcoRoute
   BazaarRoute: typeof BazaarRoute
   CollectionRoute: typeof CollectionRoute
+  EspiralRoute: typeof EspiralRoute
   ProfileRoute: typeof ProfileRoute
   RiftRoute: typeof RiftRoute
   VaultRoute: typeof VaultRoute
@@ -202,6 +228,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/espiral': {
+      id: '/espiral'
+      path: '/espiral'
+      fullPath: '/espiral'
+      preLoaderRoute: typeof EspiralRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/collection': {
       id: '/collection'
       path: '/collection'
@@ -214,6 +247,13 @@ declare module '@tanstack/react-router' {
       path: '/bazaar'
       fullPath: '/bazaar'
       preLoaderRoute: typeof BazaarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/altar-eco': {
+      id: '/altar-eco'
+      path: '/altar-eco'
+      fullPath: '/altar-eco'
+      preLoaderRoute: typeof AltarEcoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -289,8 +329,10 @@ const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
+  AltarEcoRoute: AltarEcoRoute,
   BazaarRoute: BazaarRoute,
   CollectionRoute: CollectionRoute,
+  EspiralRoute: EspiralRoute,
   ProfileRoute: ProfileRoute,
   RiftRoute: RiftRoute,
   VaultRoute: VaultRoute,

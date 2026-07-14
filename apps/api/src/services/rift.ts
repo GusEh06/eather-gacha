@@ -74,8 +74,32 @@ export async function generateRiftRotation(db: Db): Promise<RiftRotationDoc> {
 export async function getCurrentRiftRotation(db: Db): Promise<RiftRotationDoc> {
   const today = getTodayDate()
   const existing = await riftRotationCol(db).findOne({ date: today })
-  if (existing) return existing
+  if (existing && existing.slots.length > 0) return existing
+  if (existing) return refillEmptyRotation(db, existing)
   return generateRiftRotation(db)
+}
+
+/** Una rotación puede haberse creado con el catálogo vacío (antes del seed) y
+ *  quedaría rota el resto del día. Si ya hay entidades elegibles, rellena los
+ *  slots — el guard `$size: 0` evita pisar una rotación ya poblada/vendida. */
+async function refillEmptyRotation(db: Db, existing: RiftRotationDoc): Promise<RiftRotationDoc> {
+  const riftEntities = await entitiesCol(db).find({ disponibleRift: true }).toArray()
+  if (riftEntities.length === 0) return existing
+
+  const slots = shuffle(riftEntities)
+    .slice(0, 5)
+    .map((e) => ({
+      entityId: e._id!,
+      priceShards: RIFT_PRICES[e.rareza] ?? 200,
+      sold: false,
+    }))
+
+  const updated = await riftRotationCol(db).findOneAndUpdate(
+    { date: existing.date, slots: { $size: 0 } },
+    { $set: { slots } },
+    { returnDocument: "after" }
+  )
+  return updated ?? existing
 }
 
 export class RiftError extends Error {

@@ -24,6 +24,10 @@ export interface Entity {
   descripcionOjos: string
   disponibleGacha: boolean
   disponibleRift: boolean
+  // La Espiral: pool del Altar del Eco + overrides opcionales de admin
+  disponibleAltarEco?: boolean
+  statsOverride?: { hp?: number; atk?: number; def?: number; vel?: number } | null
+  espiralAbilityOverride?: string | null
 }
 
 // ─── UserEntity (instancia del inventario) ───────────────────────────────────
@@ -49,6 +53,11 @@ export interface UserProfile {
   pityMythicCounter: number
   inventory: string[]      // ObjectId refs to user_entities
   createdAt: string
+  // La Espiral: moneda blanda + energía + pity del Altar del Eco
+  ecos?: number
+  energyCurrent?: number
+  energyLastRegenAt?: string
+  espiralPityCounter?: number
 }
 
 // ─── MarketListing ───────────────────────────────────────────────────────────
