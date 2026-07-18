@@ -617,6 +617,31 @@ router.put("/entities/:id", adminMiddleware, async (c) => {
     }
     if (body["disponibleRift"] !== undefined) updates.disponibleRift = body["disponibleRift"] === "true"
     if (body["disponibleGacha"] !== undefined) updates.disponibleGacha = body["disponibleGacha"] === "true"
+    // La Espiral: pool del Altar del Eco + overrides opcionales de balance
+    if (body["disponibleAltarEco"] !== undefined)
+      updates.disponibleAltarEco = body["disponibleAltarEco"] === "true"
+    if (typeof body["espiralAbilityOverride"] === "string") {
+      const v = (body["espiralAbilityOverride"] as string).trim()
+      updates.espiralAbilityOverride = v === "" ? null : v
+    }
+    if (typeof body["statsOverride"] === "string") {
+      const raw = (body["statsOverride"] as string).trim()
+      if (raw === "") {
+        updates.statsOverride = null
+      } else {
+        try {
+          const parsed = JSON.parse(raw) as Record<string, unknown>
+          const clean: Record<string, number> = {}
+          for (const k of ["hp", "atk", "def", "vel"]) {
+            const n = Number(parsed[k])
+            if (Number.isFinite(n) && n > 0) clean[k] = Math.round(n)
+          }
+          updates.statsOverride = Object.keys(clean).length > 0 ? clean : null
+        } catch {
+          return c.json({ error: "statsOverride must be valid JSON, e.g. {\"hp\":500}" }, 400)
+        }
+      }
+    }
 
     // Imagen nueva opcional
     const imageFile = body["image"] as File | undefined

@@ -1,80 +1,13 @@
 import { motion } from "framer-motion"
-import { useEffect, useRef } from "react"
 import type { Rareza } from "../../../../../packages/shared/src/types"
 import { RARITY_CONFIG, NON_BAZAAR_RARITIES } from "../../config/rarityConfig"
+import { SparkCanvas } from "../shared/SparkCanvas"
 import type { InvokeResult } from "../../hooks/useInvoke"
 
 interface EntityRevealProps {
   result: InvokeResult
   onContinue: () => void
   onListBazaar?: () => void
-}
-
-/* Spark canvas — draws animated glowing particles that drift upward */
-function SparkCanvas({ color }: { color: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
-
-    type Spark = { x: number; y: number; r: number; vx: number; vy: number; life: number; maxLife: number }
-    const sparks: Spark[] = []
-
-    function spawn() {
-      const x = Math.random() * canvas!.width
-      const y = canvas!.height
-      sparks.push({ x, y, r: Math.random() * 2.5 + 0.5, vx: (Math.random() - 0.5) * 0.8, vy: -(Math.random() * 2 + 0.5), life: 0, maxLife: 90 + Math.random() * 60 })
-    }
-
-    for (let i = 0; i < 30; i++) {
-      spawn()
-      sparks[sparks.length - 1]!.y = Math.random() * canvas.height
-      sparks[sparks.length - 1]!.life = Math.random() * 80
-    }
-
-    let raf: number
-    function draw() {
-      ctx!.clearRect(0, 0, canvas!.width, canvas!.height)
-
-      if (Math.random() < 0.35) spawn()
-
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i]!
-        s.x += s.vx
-        s.y += s.vy
-        s.life++
-        const progress = s.life / s.maxLife
-        const alpha = progress < 0.2 ? progress / 0.2 : 1 - (progress - 0.2) / 0.8
-        ctx!.save()
-        ctx!.globalAlpha = Math.max(0, alpha) * 0.85
-        ctx!.shadowBlur = 8
-        ctx!.shadowColor = color
-        ctx!.fillStyle = color
-        ctx!.beginPath()
-        ctx!.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-        ctx!.fill()
-        ctx!.restore()
-        if (s.life >= s.maxLife) sparks.splice(i, 1)
-      }
-      raf = requestAnimationFrame(draw)
-    }
-
-    draw()
-    return () => cancelAnimationFrame(raf)
-  }, [color])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
-    />
-  )
 }
 
 export function EntityReveal({ result, onContinue, onListBazaar }: EntityRevealProps) {

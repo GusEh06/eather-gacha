@@ -7,15 +7,18 @@ import { NotificationBell } from "./NotificationBell"
 
 const NAV_ITEMS = [
   { to: "/",           label: "Ritual",         index: "01", sub: "Nuevos Aliados" },
-  { to: "/bazaar",     label: "El Bazar",       index: "02", sub: "Intercambia" },
-  { to: "/rift",       label: "Las Fisuras",    index: "03", sub: "Misiones Rápidas" },
-  { to: "/vault",      label: "La Bóveda",      index: "04", sub: "Adquiere Shards" },
-  { to: "/collection", label: "Colección",      index: "05", sub: "Tus Entidades" },
-  { to: "/profile",    label: "Perfil",         index: "06", sub: "Tu Binder" },
+  { to: "/espiral",    label: "La Espiral",     index: "02", sub: "Torre del Vacío" },
+  { to: "/bazaar",     label: "El Bazar",       index: "03", sub: "Intercambia" },
+  { to: "/rift",       label: "Las Fisuras",    index: "04", sub: "Misiones Rápidas" },
+  { to: "/vault",      label: "La Bóveda",      index: "05", sub: "Adquiere Shards" },
+  { to: "/collection", label: "Colección",      index: "06", sub: "Tus Entidades" },
+  { to: "/profile",    label: "Perfil",         index: "07", sub: "Tu Binder" },
 ] as const
 
 const CONTEXT_COPY: Record<string, { eyebrow: string; title: string }> = {
   "/":           { eyebrow: "Resonance Sequence",  title: "AETHER SUMMONING" },
+  "/espiral":    { eyebrow: "Endless Descent",     title: "THE SPIRAL" },
+  "/altar-eco":  { eyebrow: "Echo Resonance",      title: "ECHO ALTAR" },
   "/bazaar":     { eyebrow: "Hollow Trade",        title: "SHADOW BAZAAR" },
   "/rift":       { eyebrow: "Drifting Abyss",      title: "VOID EXPEDITIONS" },
   "/vault":      { eyebrow: "Resource Reserve",    title: "SHARD ACQUISITION" },
@@ -84,6 +87,8 @@ export function MasterLayout({ children }: MasterLayoutProps) {
 
   const routeKey =
     pathname === "/"           ? "altar"      :
+    pathname.startsWith("/espiral")    ? "rift"       :
+    pathname.startsWith("/altar-eco")  ? "altar"      :
     pathname.startsWith("/bazaar")     ? "bazaar"     :
     pathname.startsWith("/rift")       ? "rift"       :
     pathname.startsWith("/vault")      ? "vault"      :

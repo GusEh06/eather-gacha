@@ -2,12 +2,14 @@ import { Link } from "@tanstack/react-router"
 import { useAuth, useUser } from "@clerk/tanstack-react-start"
 import { useMemo, useState } from "react"
 import { ShardsDisplay } from "./ShardsDisplay"
+import { EcosDisplay } from "./EcosDisplay"
 import { useUserProfile } from "../../hooks/useUserProfile"
 import { AuthPanel } from "./AuthPanel"
 import { NotificationBell } from "./NotificationBell"
 
 const NAV_LINKS = [
   { to: "/",           label: "The Altar" },
+  { to: "/espiral",    label: "La Espiral" },
   { to: "/bazaar",     label: "Bazaar" },
   { to: "/rift",       label: "The Rift" },
   { to: "/vault",      label: "Vault" },
@@ -88,6 +90,7 @@ export function Navbar() {
         {isSignedIn ? (
           <>
             <ShardsDisplay amount={profile?.shards ?? 0} />
+            <EcosDisplay amount={profile?.ecos ?? 0} />
             <NotificationBell />
             <button
               className="btn-secondary"

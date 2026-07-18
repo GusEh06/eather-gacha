@@ -9,6 +9,7 @@ import {
   userEntitiesCol,
   entitiesCol,
   shardTransactionsCol,
+  ecosTransactionsCol,
   notificationsCol,
   apiKeysCol,
   ObjectId,
@@ -35,6 +36,9 @@ userRoutes.get("/profile", authMiddleware, async (c) => {
       pityMythicCounter: user.pityMythicCounter,
       inventoryCount: (user.inventory ?? []).length,
       createdAt: user.createdAt,
+      // La Espiral
+      ecos: user.ecos ?? 0,
+      espiralPityCounter: user.espiralPityCounter ?? 0,
     })
   } catch (err) {
     console.error("[user] profile error:", err)
@@ -77,22 +81,25 @@ userRoutes.get("/inventory", authMiddleware, async (c) => {
   }
 })
 
-// ── P-40: GET /user/transactions?limit=&offset= — historial de Shards ─────────
+// ── P-40: GET /user/transactions?limit=&offset=&currency= — historial ─────────
+// currency=shards (default) | ecos (La Espiral)
 userRoutes.get("/transactions", authMiddleware, async (c) => {
   const clerkId = c.get("userId") as string
   const limit = Math.min(Number(c.req.query("limit") ?? 50) || 50, 200)
   const offset = Math.max(Number(c.req.query("offset") ?? 0) || 0, 0)
+  const currency = c.req.query("currency") === "ecos" ? "ecos" : "shards"
 
   try {
     const db = await getDb()
+    const col = currency === "ecos" ? ecosTransactionsCol(db) : shardTransactionsCol(db)
     const [transactions, total] = await Promise.all([
-      shardTransactionsCol(db)
+      col
         .find({ userId: clerkId })
         .sort({ createdAt: -1 })
         .skip(offset)
         .limit(limit)
         .toArray(),
-      shardTransactionsCol(db).countDocuments({ userId: clerkId }),
+      col.countDocuments({ userId: clerkId }),
     ])
 
     return c.json({

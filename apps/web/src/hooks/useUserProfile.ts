@@ -8,6 +8,9 @@ export interface UserProfile {
   pityCounter: number
   pityMythicCounter: number
   inventoryCount: number
+  // La Espiral
+  ecos: number
+  espiralPityCounter: number
 }
 
 export const USER_PROFILE_KEY = ["user-profile"] as const
