@@ -1431,6 +1431,11 @@ a:hover {
 .gacha-hud {
   display: flex;
   align-items: center;
+  gap: 14px;
+}
+.gacha-hud-notif {
+  display: flex;
+  align-items: center;
 }
 .gacha-hud-profile {
   position: relative;

@@ -44,6 +44,7 @@ services:
         condition: service_healthy
     volumes:
       - ./apps/api:/repo/apps/api
+      - /repo/apps/api/node_modules
       - /repo/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true
@@ -64,6 +65,7 @@ services:
       - api
     volumes:
       - ./apps/web:/repo/apps/web
+      - /repo/apps/web/node_modules
       - /repo/node_modules
     environment:
       - CHOKIDAR_USEPOLLING=true

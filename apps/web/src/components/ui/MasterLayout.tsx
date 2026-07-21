@@ -128,12 +128,14 @@ export function MasterLayout({ children }: MasterLayoutProps) {
         </div>
 
         <header className="gacha-hud" ref={hudRef}>
+          {isSignedIn && (
+            <div className="gacha-hud-notif">
+              <NotificationBell />
+            </div>
+          )}
           <div className="gacha-hud-profile">
             {isSignedIn ? (
-              <>
-                <NotificationBell />
-                <UserButton />
-              </>
+              <UserButton />
             ) : (
               <SignInButton mode="modal">
                  <button className="gacha-login-icon">★</button>

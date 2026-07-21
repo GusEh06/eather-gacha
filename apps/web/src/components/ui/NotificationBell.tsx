@@ -39,12 +39,18 @@ export function NotificationBell() {
         style={{
           background: "transparent",
           border: "1px solid var(--border-subtle)",
+          borderRadius: "6px",
           color: unread ? "var(--accent-aether)" : "var(--text-secondary)",
-          padding: "0.4rem 0.55rem",
+          padding: "0",
+          height: "38px",
+          width: "38px",
+          boxSizing: "border-box",
           cursor: "pointer",
           position: "relative",
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
         }}
       >
         <Bell size={16} />

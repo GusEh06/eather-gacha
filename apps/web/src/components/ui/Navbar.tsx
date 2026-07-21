@@ -46,20 +46,23 @@ export function Navbar() {
         zIndex: 100,
       }}
     >
-      {/* Brand */}
-      <Link
-        to="/"
-        style={{
-          fontFamily: "var(--font-display)",
-          fontSize: "1.1rem",
-          fontWeight: 700,
-          color: "var(--accent-aether)",
-          letterSpacing: "0.08em",
-          textDecoration: "none",
-        }}
-      >
-        AETHER GACHA
-      </Link>
+      {/* Brand + notifications (left corner) */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
+        <Link
+          to="/"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "1.1rem",
+            fontWeight: 700,
+            color: "var(--accent-aether)",
+            letterSpacing: "0.08em",
+            textDecoration: "none",
+          }}
+        >
+          AETHER GACHA
+        </Link>
+        {isSignedIn && <NotificationBell />}
+      </div>
 
       {/* Nav links */}
       <ul
@@ -85,16 +88,25 @@ export function Navbar() {
         ))}
       </ul>
 
-      {/* Shards + auth */}
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+      {/* Shards + auth (right corner) */}
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexShrink: 0 }}>
         {isSignedIn ? (
           <>
-            <ShardsDisplay amount={profile?.shards ?? 0} />
-            <EcosDisplay amount={profile?.ecos ?? 0} />
-            <NotificationBell />
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <ShardsDisplay amount={profile?.shards ?? 0} />
+              <EcosDisplay amount={profile?.ecos ?? 0} />
+            </div>
             <button
               className="btn-secondary"
-              style={{ fontSize: "0.82rem", padding: "0.35rem 0.7rem" }}
+              style={{
+                fontSize: "0.82rem",
+                padding: "0 0.9rem",
+                height: "38px",
+                boxSizing: "border-box",
+                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+              }}
               onClick={() => setAuthOpen(true)}
             >
               {binderName}
@@ -103,7 +115,7 @@ export function Navbar() {
         ) : (
           <button
             className="btn-primary"
-            style={{ fontSize: "0.85rem", padding: "0.4rem 1rem" }}
+            style={{ fontSize: "0.85rem", padding: "0 1rem", height: "38px", boxSizing: "border-box" }}
             onClick={() => setAuthOpen(true)}
           >
             Sign In
